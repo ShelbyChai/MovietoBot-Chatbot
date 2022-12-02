@@ -74,3 +74,37 @@ def genres_parsing(genres):
     genres = genres.replace('|', ' and ')
 
     return genres
+
+
+# Mini Game -----
+def display_movie_summary(title_dict, movie_summary):
+    print("Chatbot: Let's get rolling! For this mini game, I will scramble 2 similar movie plot with the movie "
+          "and you have to guess it. \n" "Which movie below do you think correspond to this given summary -> " +
+          movie_summary + "\n")
+
+    for index, title in enumerate(title_dict.values()):
+        print(str(index + 1) + ". " + title)
+
+
+def correct_answer_response(game_point):
+    response = [
+        "Damn you're good! You now have " + str(game_point) + " point.",
+        "We've got a cinephile! Your currently own " + str(game_point) + " point.",
+        "You got it! You now owns " + str(game_point) + " point."
+    ]
+
+    random_response = random.choice(response)
+
+    return random_response
+
+
+def incorrect_answer_response(answer, game_point):
+    response = [
+        "Oops, the answer is '" + answer + "', your current point remains: " + str(game_point) + ".",
+        "Not quite, it is '" + answer + "', your point remains: " + str(game_point) + ".",
+        "Ouch, the correct answer for this is '" + answer + "', your point still remains: " + str(game_point) + "."
+    ]
+
+    random_response = random.choice(response)
+
+    return random_response

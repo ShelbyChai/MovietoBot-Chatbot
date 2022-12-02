@@ -8,8 +8,9 @@ from scipy.spatial import distance
 from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
 
 # --------------------------------------------------------------
-TITLE_LABEL = 'Title'
+# TITLE_LABEL = 'Title'
 GENRES_LABEL = 'Genres'
+GAME_LABEL = 'Game'
 
 tfidf = TfidfVectorizer()
 analyzer = TfidfVectorizer().build_analyzer()
@@ -38,6 +39,16 @@ def build_genre_tfidf_vectorizer(corpus):
 
 def calculate_similarity(query, document, intent, vectorizer):
     similarity = 0
+
+    # Compute the cosine similarity between the user input with the correct Movie Title
+    if intent == GAME_LABEL:
+        tfidf_vectorizer = TfidfVectorizer(lowercase=True, analyzer=stemmed_words)
+
+        movie_titles_matrix = tfidf_vectorizer.fit_transform([document])
+        user_answer_matrix = tfidf_vectorizer.transform([query])
+
+        similarity = cosine_similarity(user_answer_matrix, movie_titles_matrix)
+        # print(similarity)
 
     # Genre Searching
     if intent == GENRES_LABEL:
@@ -84,15 +95,3 @@ def get_similar_movies(row, tfidf_vectorizer, summary_matrix):
     top_summary_similarity = similarity[0:3]
 
     return top_summary_similarity
-
-
-def compute_query_title_similarity(user_answer, movie_title):
-    tfidf_vectorizer = TfidfVectorizer(lowercase=True, analyzer=stemmed_words)
-
-    movie_titles_matrix = tfidf_vectorizer.fit_transform([movie_title])
-    user_answer_matrix = tfidf_vectorizer.transform([user_answer])
-
-    similarity = cosine_similarity(user_answer_matrix, movie_titles_matrix)
-    print(similarity)
-
-    return similarity
