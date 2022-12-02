@@ -1,0 +1,98 @@
+import numpy as np
+
+from nltk.stem.snowball import SnowballStemmer
+from scipy.spatial import distance
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.corpus import stopwords
+from scipy.spatial import distance
+from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
+
+# --------------------------------------------------------------
+TITLE_LABEL = 'Title'
+GENRES_LABEL = 'Genres'
+
+tfidf = TfidfVectorizer()
+analyzer = TfidfVectorizer().build_analyzer()
+english_stopwords = stopwords.words('english')
+sb_stemmer = SnowballStemmer('english')
+
+
+def stemmed_words(doc):
+    return (sb_stemmer.stem(w) for w in analyzer(doc))
+
+
+def build_genre_tfidf_vectorizer(corpus):
+    # Genres column text pre-processing
+    genres_list = [gen.split('|') for gen in corpus if '|' in gen]
+    genres_list.extend(gen for gen in corpus if '|' not in gen)
+    genres_list = [genre for genres in genres_list for genre in genres]
+
+    # Build a vectorizer with text tokenization, convert lowercase, remove stop words and word stemming
+    tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'), analyzer=stemmed_words)
+
+    # Fit the formatted Genres corpus into the vectorizer
+    tfidf_vectorizer.fit_transform(genres_list)
+
+    return tfidf_vectorizer
+
+
+def calculate_similarity(query, document, intent, vectorizer):
+    similarity = 0
+
+    # Genre Searching
+    if intent == GENRES_LABEL:
+
+        if '|' in document:
+            document = document.split('|')
+            document = ' '.join(document)
+
+        query_tfidf_vector = vectorizer.transform([query])
+        document_tfidf_vector = vectorizer.transform([document])
+
+        # Compute the cosine similarity between the user_query and genre row document
+        similarity = cosine_similarity(query_tfidf_vector, document_tfidf_vector)
+
+    return similarity
+
+
+# Mini Games
+def build_summary_vectorizer(summary_corpus):
+    # Build a vectorizer with text tokenization, convert lowercase, remove stop words, word stemming
+    # and bi-grams
+    tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'),
+                                       analyzer=stemmed_words, ngram_range=(1, 2))
+
+    summary_matrix = tfidf_vectorizer.fit_transform(summary_corpus)
+
+    return [tfidf_vectorizer, summary_matrix]
+
+
+def get_similar_movies(row, tfidf_vectorizer, summary_matrix):
+    document_tfidf_vector = tfidf_vectorizer.transform([row['Summary']])
+
+    similarity = cosine_similarity(summary_matrix, document_tfidf_vector)
+    similarity = list(similarity)
+
+    # Add an index column to the list
+    for index, item in enumerate(similarity):
+        similarity[index] = [index, item]
+
+    # Sort the summary similarity in descending order
+    similarity = sorted(similarity, key=lambda x: x[1], reverse=True)
+
+    # Keep track of the 2 most similar movies to the chosen movie
+    top_summary_similarity = similarity[0:3]
+
+    return top_summary_similarity
+
+
+def compute_query_title_similarity(user_answer, movie_title):
+    tfidf_vectorizer = TfidfVectorizer(lowercase=True, analyzer=stemmed_words)
+
+    movie_titles_matrix = tfidf_vectorizer.fit_transform([movie_title])
+    user_answer_matrix = tfidf_vectorizer.transform([user_answer])
+
+    similarity = cosine_similarity(user_answer_matrix, movie_titles_matrix)
+    print(similarity)
+
+    return similarity
