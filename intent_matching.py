@@ -43,9 +43,9 @@ def build_intent_matching_classifier():
             for text in intent['text']:
                 data_inputs.append(text)
                 data_intents.append(label)
-
+                # data_intents.append(intent['intent'])
         index += 1
-
+    # print(intent_classes)
     analyzer = TfidfVectorizer().build_analyzer()
     sb_stemmer = SnowballStemmer('english')
 

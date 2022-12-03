@@ -6,9 +6,10 @@ import pandas as pd
 from response_generator import genre_response, similar_genre_response, fallback_genre_response, display_movie_summary, \
     correct_answer_response, incorrect_answer_response
 from similarity_information_retrieval import build_genre_tfidf_vectorizer, build_summary_vectorizer, get_similar_movies, \
-    calculate_similarity
+    calculate_it_similarity
 from similarity_information_retrieval import RECOMMENDATION_LABEL, GAME_LABEL, SMALL_TALK_LABEL, IDENTITY_MANAGEMENT_LABEL
 from intent_matching import build_intent_matching_classifier
+from identity_management import build_identity_management_vectorizer, calculate_im_similarity, get_user_name
 
 # --------------------------------------------------------------------------
 movie_df = pd.read_csv(r"data/information_retrieval/movie_dataset.csv")
@@ -21,7 +22,7 @@ def movie_recommendation(user_input, vectorizer):
     similar_movies = []
 
     for index, row in movie_df.iterrows():
-        similarity = calculate_similarity(user_input, row['Genres'], RECOMMENDATION_LABEL, vectorizer)
+        similarity = calculate_it_similarity(user_input, row['Genres'], RECOMMENDATION_LABEL, vectorizer)
 
         if similarity > max_similarity:
             max_similarity = similarity
@@ -55,7 +56,7 @@ def movie_recommendation(user_input, vectorizer):
     else:
         response = fallback_genre_response()
 
-    print(max_similarity)
+    # print(max_similarity)
     print('Chatbot: ' + response)
 
 
@@ -83,9 +84,11 @@ def movie_guessing_game(game_point):
 
     user_answer = input('Your answer >>> ')
 
-    similarity = calculate_similarity(user_answer, answer[1], intent, summary_tfidf_vectorizer)
+    similarity_answer = calculate_it_similarity(user_answer, answer[1], GAME_LABEL, summary_tfidf_vectorizer)
 
-    if similarity > 0.8:
+    # print(similarity_answer)
+
+    if similarity_answer > 0.8:
         game_point += 1
         response = correct_answer_response(game_point)
     else:
@@ -96,31 +99,80 @@ def movie_guessing_game(game_point):
     return game_point
 
 
+def identity_management(name):
+    # print('Doing identity management')
+    im_similarity = 0
+    im_maximum_similarity = 0
+    tag = ''
+    response = ''
+
+    for intent in intent_label[IDENTITY_MANAGEMENT_LABEL]['intents']:
+        for text in intent['text']:
+            im_similarity = calculate_im_similarity(user_query, text, im_tfidf_vectorizer)
+            if im_similarity > im_maximum_similarity:
+                im_maximum_similarity = im_similarity
+                tag = intent['intent']
+                response = random.choice(intent['responses'])
+
+    if im_maximum_similarity > 0.7:
+        # Store the username
+        if tag == "InitialUserName":
+            print('Chatbot: ' + response)
+            name_query = input("User: ")
+            name = get_user_name(name_query, im_tfidf_vectorizer.get_feature_names_out())
+            print('Chatbot: Great! Hi ' + name + ", nice to meet you! What can I do for you today?")
+
+        # Change the username
+        if tag == "ChangeUserName":
+            name = get_user_name(user_query, im_tfidf_vectorizer.get_feature_names_out())
+            response = response.replace("<HUMAN>", name)
+            print('Chatbot: ' + response)
+
+        # Explicit name output
+        if tag == "UserNameQuery":
+            if name == "":
+                print("Chatbot: I still don't know your name.")
+            else:
+                response = response.replace("<HUMAN>", name)
+                print("Chatbot: " + response)
+
+        # print(tag)
+        # print(im_maximum_similarity)
+
+    else:
+        print("Chatbot: Sorry, I don't understand.")
+        # print(im_maximum_similarity)
+
+    return name
+
+
 """
 Chatbot
 """
-
 print("Setting up movie database ....")
+# Build intent matching classifier and tfidf_vectorizer
 genre_tfidf_vectorizer = build_genre_tfidf_vectorizer(movie_df['Genres'])
 [summary_tfidf_vectorizer, summary_matrix] = build_summary_vectorizer(movie_df['Summary'])
 [intent_label, intent_classifier, intent_tfidf_vectorizer] = build_intent_matching_classifier()
-print("Hiya, my name is Filmtobot, what can I do for you?")
+[im_tfidf_vectorizer, im_matrix] = build_identity_management_vectorizer(intent_label[IDENTITY_MANAGEMENT_LABEL])
+print("Chatbot: Hiya, my name is Filmtobot.")
 
 # ---------------------------------
-intent = RECOMMENDATION_LABEL
 stop_list = ['Bye', 'Goodbye']
 stop = False
 
+user_name = ""
 # Mini Game variables
 user_mini_game_point = 0
 
-print(genre_tfidf_vectorizer.get_feature_names_out())
+# print(genre_tfidf_vectorizer.get_feature_names_out())
 
 while not stop:
-    similarity = 0
-    maximum_similarity = 0
-
-    user_query = input('User: ')
+    # Display user's name if we got it
+    if user_name != '':
+        user_query = input(user_name + ": ")
+    else:
+        user_query = input('User: ')
 
     # Intent classification
     vectorized_user_query = intent_tfidf_vectorizer.transform([user_query])
@@ -128,45 +180,54 @@ while not stop:
 
     class_keys = intent_classifier.classes_.tolist()
     probability_values = intent_classifier.predict_proba(vectorized_user_query).tolist()[0]
-    # similarity_values = [value * 100 for value in similarity_values]
 
     # Construct an intent probability distribution dictionary
-    # References: https://www.geeksforgeeks.org/python-convert-two-lists-into-a-dictionary/
     class_probability_dict = {class_keys[i]: probability_values[i] for i in range(len(class_keys))}
 
-    print(class_probability_dict)
-    print(user_intent)
+    # print(class_probability_dict)
+    # print(user_intent)
 
     if user_query not in stop_list:
         intent_prediction_probability = class_probability_dict[user_intent[0]]
+
         # Only proceed with the intent if the classifier have high probability
-        if intent_prediction_probability >= 0.9:
-            if user_intent == RECOMMENDATION_LABEL:
+        # if intent_prediction_probability >= 0.8:
+        if user_intent == RECOMMENDATION_LABEL:
+            if intent_prediction_probability >= 0.9:
                 movie_recommendation(user_query, genre_tfidf_vectorizer)
 
-            if user_intent == GAME_LABEL:
+            elif 0.9 > intent_prediction_probability > 0.8:
+                print("Chatbot: Can you please reformulate your query?")
+
+            else:
+                print("Chatbot: Sorry, I don't understand.")
+
+        if user_intent == GAME_LABEL:
+            if intent_prediction_probability >= 0.9:
                 user_mini_game_point = movie_guessing_game(user_mini_game_point)
 
-            if user_intent == SMALL_TALK_LABEL:
-                print('Doing small talk')
+            elif 0.9 > intent_prediction_probability > 0.8:
+                print("Chatbot: Can you please reformulate your query?")
 
-            if user_intent == IDENTITY_MANAGEMENT_LABEL:
-                print('Doing identity management')
+            else:
+                print("Chatbot: Sorry, I don't understand.")
 
-        elif 0.9 > intent_prediction_probability > 0.8:
-            print("Do you mean XXX?")
+        if user_intent == SMALL_TALK_LABEL:
+            print('Doing small talk')
 
-        # Fallback mechanism
-        else:
-            print("Chatbot: I don't understand you :(.")
+        if user_intent == IDENTITY_MANAGEMENT_LABEL:
+            if intent_prediction_probability >= 0.8:
+                user_name = identity_management(user_name)
+
+            elif 0.8 > intent_prediction_probability > 0.7:
+                print("Chatbot: Can you please reformulate your query?")
+
+            else:
+                print("Chatbot: Sorry, I don't understand.")
 
     else:
         print("Chatbot: Bye")
         stop = True
 
-# for intent in intent_label['information retrieval']['intents']:
-#     for text in intent['text']:
-#         calculate_similarity()
-
-
 # TODO: Hyperparameter tuning
+# TODO: Save the model using pickle

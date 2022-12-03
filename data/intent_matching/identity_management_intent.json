@@ -1,7 +1,7 @@
 {
   "intents": [
     {
-      "intent": "ChangeUserName",
+      "intent": "InitialUserName",
       "text": [
         "Hi",
         "Hi there",
@@ -16,12 +16,14 @@
         "Nice to meet you",
         "Heyyy",
         "Good morning",
+        "Good afternoon",
+        "Good evening",
         "Greetings"
       ],
       "responses": [
-        "Hi, please tell me your user name",
-        "Hello, please tell me your user name",
-        "Hola, please tell me your name"
+        "Hiiii, please tell me your username.",
+        "Hello, please tell me your username.",
+        "Hola, please tell me your name."
       ]
     },
     {
@@ -43,7 +45,10 @@
         "Call me Bella from now",
         "You can call me Adam",
         "Names Adam",
-        "Call me Bella"
+        "Call me Bella",
+        "My name is Adam",
+        "Call me Bella Adam please",
+        "Hi my name is Bella"
       ],
       "responses": [
         "Great! Hi <HUMAN>! How can I help?",
@@ -68,10 +73,9 @@
       ],
       "responses": [
         "You are <HUMAN>! How can I help?",
-        "Your name is  <HUMAN>, how can I help you?",
-        "They call you <HUMAN>, what can I do for you?",
         "Your name is <HUMAN>, how can I help you?",
-        "<HUMAN>, what can I do for you?"
+        "They call you <HUMAN>, what can I do for you?",
+        "Your name is <HUMAN>, how can I help you?"
       ]
     }
   ]
