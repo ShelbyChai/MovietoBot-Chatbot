@@ -1,26 +1,7 @@
 {
   "intents": [
     {
-      "intent": "GameQuery",
-      "text": [
-        "Let's play a game",
-        "Mini game",
-        "Game",
-        "Guessing Game",
-        "Lets play something",
-        "I would like to play a game with you",
-        "Let's do something fun",
-        "Fun game",
-        "Entertain me",
-        "Activity to pastime",
-        "Play game",
-        "Quiz game",
-        "Let's do something interesting",
-        "Play a game with me"
-      ]
-    },
-    {
-      "intent": "GenresQuery",
+      "intent": "MovieRecommendation",
       "text": [
         "Recommend me a movie containing",
         "Suggest any movie with",
@@ -28,10 +9,11 @@
         "I would like a movie with some",
         "Genres",
         "I like movie that contains",
-        "Give me a movie",
+        "Give me a movie with",
         "Recommendation on",
         "Can you suggest me a movie",
         "Give me the best",
+        "Do you have any movie with",
         "Category",
         "Propose me a film",
         "Recommend a",

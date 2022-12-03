@@ -5,8 +5,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # --------------------------------------------------------------
 # TITLE_LABEL = 'Title'
-GENRES_LABEL = 'Genres'
-GAME_LABEL = 'Game'
+GAME_LABEL = 'game'
+RECOMMENDATION_LABEL = 'movie recommendation'
+SMALL_TALK_LABEL = 'small talk'
+IDENTITY_MANAGEMENT_LABEL = 'identity management'
 
 # tfidf = TfidfVectorizer()
 analyzer = TfidfVectorizer().build_analyzer()
@@ -47,7 +49,7 @@ def calculate_similarity(query, document, intent, vectorizer):
         # print(similarity)
 
     # Genre Searching
-    if intent == GENRES_LABEL:
+    if intent == RECOMMENDATION_LABEL:
 
         if '|' in document:
             document = document.split('|')

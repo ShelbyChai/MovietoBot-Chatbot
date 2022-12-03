@@ -6,8 +6,9 @@ import pandas as pd
 from response_generator import genre_response, similar_genre_response, fallback_genre_response, display_movie_summary, \
     correct_answer_response, incorrect_answer_response
 from similarity_information_retrieval import build_genre_tfidf_vectorizer, build_summary_vectorizer, get_similar_movies, \
-    calculate_similarity, GENRES_LABEL, GAME_LABEL
-from intent_matching import train_intent_classifier
+    calculate_similarity
+from similarity_information_retrieval import RECOMMENDATION_LABEL, GAME_LABEL, SMALL_TALK_LABEL, IDENTITY_MANAGEMENT_LABEL
+from intent_matching import build_intent_matching_classifier
 
 # --------------------------------------------------------------------------
 movie_df = pd.read_csv(r"data/information_retrieval/movie_dataset.csv")
@@ -20,7 +21,7 @@ def movie_recommendation(user_input, vectorizer):
     similar_movies = []
 
     for index, row in movie_df.iterrows():
-        similarity = calculate_similarity(user_input, row[GENRES_LABEL], GENRES_LABEL, vectorizer)
+        similarity = calculate_similarity(user_input, row['Genres'], RECOMMENDATION_LABEL, vectorizer)
 
         if similarity > max_similarity:
             max_similarity = similarity
@@ -96,13 +97,17 @@ def movie_guessing_game(game_point):
 
 
 """
-Main Chatbot Loop 
+Chatbot
 """
 
+print("Setting up movie database ....")
 genre_tfidf_vectorizer = build_genre_tfidf_vectorizer(movie_df['Genres'])
 [summary_tfidf_vectorizer, summary_matrix] = build_summary_vectorizer(movie_df['Summary'])
+[intent_label, intent_classifier, intent_tfidf_vectorizer] = build_intent_matching_classifier()
+print("Hiya, my name is Filmtobot, what can I do for you?")
 
-intent = GENRES_LABEL
+# ---------------------------------
+intent = RECOMMENDATION_LABEL
 stop_list = ['Bye', 'Goodbye']
 stop = False
 
@@ -112,15 +117,56 @@ user_mini_game_point = 0
 print(genre_tfidf_vectorizer.get_feature_names_out())
 
 while not stop:
-    query = input('Chatbot: What can I do for you?\nUser: ')
-    if query not in stop_list:
-        if intent == GENRES_LABEL:
-            movie_recommendation(query, genre_tfidf_vectorizer)
+    similarity = 0
+    maximum_similarity = 0
 
-        # Create a method to take in user_input and check whether there is specific keywords
-        if intent == GAME_LABEL:
-            user_mini_game_point = movie_guessing_game(user_mini_game_point)
+    user_query = input('User: ')
+
+    # Intent classification
+    vectorized_user_query = intent_tfidf_vectorizer.transform([user_query])
+    user_intent = intent_classifier.predict(vectorized_user_query)
+
+    class_keys = intent_classifier.classes_.tolist()
+    probability_values = intent_classifier.predict_proba(vectorized_user_query).tolist()[0]
+    # similarity_values = [value * 100 for value in similarity_values]
+
+    # Construct an intent probability distribution dictionary
+    # References: https://www.geeksforgeeks.org/python-convert-two-lists-into-a-dictionary/
+    class_probability_dict = {class_keys[i]: probability_values[i] for i in range(len(class_keys))}
+
+    print(class_probability_dict)
+    print(user_intent)
+
+    if user_query not in stop_list:
+        intent_prediction_probability = class_probability_dict[user_intent[0]]
+        # Only proceed with the intent if the classifier have high probability
+        if intent_prediction_probability >= 0.9:
+            if user_intent == RECOMMENDATION_LABEL:
+                movie_recommendation(user_query, genre_tfidf_vectorizer)
+
+            if user_intent == GAME_LABEL:
+                user_mini_game_point = movie_guessing_game(user_mini_game_point)
+
+            if user_intent == SMALL_TALK_LABEL:
+                print('Doing small talk')
+
+            if user_intent == IDENTITY_MANAGEMENT_LABEL:
+                print('Doing identity management')
+
+        elif 0.9 > intent_prediction_probability > 0.8:
+            print("Do you mean XXX?")
+
+        # Fallback mechanism
+        else:
+            print("Chatbot: I don't understand you :(.")
 
     else:
         print("Chatbot: Bye")
         stop = True
+
+# for intent in intent_label['information retrieval']['intents']:
+#     for text in intent['text']:
+#         calculate_similarity()
+
+
+# TODO: Hyperparameter tuning

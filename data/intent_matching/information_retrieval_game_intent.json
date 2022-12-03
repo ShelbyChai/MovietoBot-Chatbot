@@ -1,0 +1,23 @@
+{
+  "intents": [
+    {
+      "intent": "GameQuery",
+      "text": [
+        "Let's play a game",
+        "Mini game",
+        "Game",
+        "Guessing Game",
+        "Lets play something",
+        "I would like to play a game with you",
+        "Let's do something fun",
+        "Fun game",
+        "Entertain me",
+        "Activity to pastime",
+        "Play game",
+        "Quiz game",
+        "Let's do something interesting",
+        "Play a game with me"
+      ]
+    }
+  ]
+}
