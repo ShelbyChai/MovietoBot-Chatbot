@@ -1,0 +1,65 @@
+{
+  "intents": [
+    {
+      "intent": "GameQuery",
+      "text": [
+        "Let's play a game",
+        "Mini game",
+        "Game",
+        "Guessing Game",
+        "Lets play something",
+        "I would like to play a game with you",
+        "Let's do something fun",
+        "Fun game",
+        "Entertain me",
+        "Activity to pastime",
+        "Play game",
+        "Quiz game",
+        "Let's do something interesting",
+        "Play a game with me"
+      ]
+    },
+    {
+      "intent": "GenresQuery",
+      "text": [
+        "Recommend me a movie containing",
+        "Suggest any movie with",
+        "Give a movie with",
+        "I would like a movie with some",
+        "Genres",
+        "I like movie that contains",
+        "Give me a movie",
+        "Recommendation on",
+        "Can you suggest me a movie",
+        "Give me the best",
+        "Category",
+        "Propose me a film",
+        "Recommend a",
+        "Suggest a",
+        "action",
+        "adventure",
+        "animation",
+        "biography",
+        "comedy",
+        "crime",
+        "documentary",
+        "drama",
+        "family",
+        "fantasy",
+        "fi",
+        "history",
+        "horror",
+        "music",
+        "mystery",
+        "news",
+        "romance",
+        "sci",
+        "sport",
+        "thriller",
+        "war",
+        "western",
+        "sci-fi"
+      ]
+    }
+  ]
+}

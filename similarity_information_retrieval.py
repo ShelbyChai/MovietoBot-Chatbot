@@ -1,20 +1,16 @@
-import numpy as np
-
-from nltk.stem.snowball import SnowballStemmer
-from scipy.spatial import distance
-from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.corpus import stopwords
-from scipy.spatial import distance
-from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
+from nltk.stem.snowball import SnowballStemmer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # --------------------------------------------------------------
 # TITLE_LABEL = 'Title'
 GENRES_LABEL = 'Genres'
 GAME_LABEL = 'Game'
 
-tfidf = TfidfVectorizer()
+# tfidf = TfidfVectorizer()
 analyzer = TfidfVectorizer().build_analyzer()
-english_stopwords = stopwords.words('english')
+# english_stopwords = stopwords.words('english')
 sb_stemmer = SnowballStemmer('english')
 
 
@@ -31,7 +27,7 @@ def build_genre_tfidf_vectorizer(corpus):
     # Build a vectorizer with text tokenization, convert lowercase, remove stop words and word stemming
     tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'), analyzer=stemmed_words)
 
-    # Fit the formatted Genres corpus into the vectorizer
+    # Fit the formatted Genres information_retrieval into the vectorizer
     tfidf_vectorizer.fit_transform(genres_list)
 
     return tfidf_vectorizer

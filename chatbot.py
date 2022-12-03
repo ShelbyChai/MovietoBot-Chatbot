@@ -2,23 +2,15 @@ import random
 
 import pandas as pd
 
-from similarity_information_retrieval import build_genre_tfidf_vectorizer
-from similarity_information_retrieval import build_summary_vectorizer
-from similarity_information_retrieval import get_similar_movies
-from similarity_information_retrieval import calculate_similarity
-from similarity_information_retrieval import GENRES_LABEL
-from similarity_information_retrieval import GAME_LABEL
-
-# Import bot response function
-from response_generator import genre_response
-from response_generator import similar_genre_response
-from response_generator import fallback_genre_response
-from response_generator import display_movie_summary
-from response_generator import correct_answer_response
-from response_generator import incorrect_answer_response
+# Import bot response functions
+from response_generator import genre_response, similar_genre_response, fallback_genre_response, display_movie_summary, \
+    correct_answer_response, incorrect_answer_response
+from similarity_information_retrieval import build_genre_tfidf_vectorizer, build_summary_vectorizer, get_similar_movies, \
+    calculate_similarity, GENRES_LABEL, GAME_LABEL
+from intent_matching import train_intent_classifier
 
 # --------------------------------------------------------------------------
-movie_df = pd.read_csv(r"./data/movie_dataset.csv")
+movie_df = pd.read_csv(r"data/information_retrieval/movie_dataset.csv")
 
 
 def movie_recommendation(user_input, vectorizer):
@@ -110,7 +102,7 @@ Main Chatbot Loop
 genre_tfidf_vectorizer = build_genre_tfidf_vectorizer(movie_df['Genres'])
 [summary_tfidf_vectorizer, summary_matrix] = build_summary_vectorizer(movie_df['Summary'])
 
-intent = GAME_LABEL
+intent = GENRES_LABEL
 stop_list = ['Bye', 'Goodbye']
 stop = False
 
@@ -125,6 +117,7 @@ while not stop:
         if intent == GENRES_LABEL:
             movie_recommendation(query, genre_tfidf_vectorizer)
 
+        # Create a method to take in user_input and check whether there is specific keywords
         if intent == GAME_LABEL:
             user_mini_game_point = movie_guessing_game(user_mini_game_point)
 

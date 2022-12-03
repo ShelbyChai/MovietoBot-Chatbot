@@ -1,0 +1,78 @@
+{
+  "intents": [
+    {
+      "intent": "ChangeUserName",
+      "text": [
+        "Hi",
+        "Hi there",
+        "Hola",
+        "Hello",
+        "Hello there",
+        "Hya",
+        "Hya there",
+        "Yo",
+        "What's up",
+        "Good to meet you",
+        "Nice to meet you",
+        "Heyyy",
+        "Good morning",
+        "Greetings"
+      ],
+      "responses": [
+        "Hi, please tell me your user name",
+        "Hello, please tell me your user name",
+        "Hola, please tell me your name"
+      ]
+    },
+    {
+      "intent": "ChangeUserName",
+      "text": [
+        "My user is Adam",
+        "This is Adam",
+        "I am Adam",
+        "It is Adam",
+        "My user is Bella",
+        "This is Bella",
+        "I am Bella",
+        "It is Bella",
+        "Change my name to Adam",
+        "I want my name to be called as Bella",
+        "Change name to Bella",
+        "I want to be called as Bella",
+        "Change name",
+        "Call me Bella from now",
+        "You can call me Adam",
+        "Names Adam",
+        "Call me Bella"
+      ],
+      "responses": [
+        "Great! Hi <HUMAN>! How can I help?",
+        "Good! Hi <HUMAN>, how can I help you?",
+        "Cool! Hello <HUMAN>, what can I do for you?",
+        "OK! Hola <HUMAN>, how can I help you?",
+        "OK! hi <HUMAN>, what can I do for you?"
+      ]
+    },
+    {
+      "intent": "UserNameQuery",
+      "text": [
+        "What is my name?",
+        "What do you call me?",
+        "Who do you think I am?",
+        "What do you think I am?",
+        "Who are you talking to?",
+        "What name do you call me by?",
+        "Tell me my name",
+        "How do you call me?",
+        "Do you remember me?"
+      ],
+      "responses": [
+        "You are <HUMAN>! How can I help?",
+        "Your name is  <HUMAN>, how can I help you?",
+        "They call you <HUMAN>, what can I do for you?",
+        "Your name is <HUMAN>, how can I help you?",
+        "<HUMAN>, what can I do for you?"
+      ]
+    }
+  ]
+}
