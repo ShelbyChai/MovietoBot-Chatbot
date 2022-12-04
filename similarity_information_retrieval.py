@@ -4,15 +4,14 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # --------------------------------------------------------------
-# TITLE_LABEL = 'Title'
+# Label for intent
 GAME_LABEL = 'game'
 RECOMMENDATION_LABEL = 'movie recommendation'
 SMALL_TALK_LABEL = 'small talk'
 IDENTITY_MANAGEMENT_LABEL = 'identity management'
+QUESTION_ANSWER_LABEL = 'question answer'
 
-# tfidf = TfidfVectorizer()
 analyzer = TfidfVectorizer().build_analyzer()
-# english_stopwords = stopwords.words('english')
 sb_stemmer = SnowballStemmer('english')
 
 
@@ -64,24 +63,23 @@ def calculate_it_similarity(query, document, intent, vectorizer):
     return similarity
 
 
-# Mini Games
-def build_summary_vectorizer(summary_corpus):
+def build_tfidf_vectorizer_with_matrix(corpus):
     # Build a vectorizer with text tokenization, convert lowercase, remove stop words, word stemming
     # and bi-grams
     tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'),
                                        analyzer=stemmed_words, ngram_range=(1, 2))
 
-    summary_matrix = tfidf_vectorizer.fit_transform(summary_corpus)
+    tfidf_matrix = tfidf_vectorizer.fit_transform(corpus)
 
-    return [tfidf_vectorizer, summary_matrix]
+    return [tfidf_vectorizer, tfidf_matrix]
 
 
-def get_similar_movies(row, tfidf_vectorizer, summary_matrix):
+def rank_similar_documents(input_data, tfidf_vectorizer, corpus_matrix):
     # Calculate the tfidf vector of the selected movie to be guessed
-    document_tfidf_vector = tfidf_vectorizer.transform([row['Summary']])
+    document_tfidf_vector = tfidf_vectorizer.transform([input_data])
 
     # Find the cosine similarity of the summary corpus with the selected movie summary
-    similarity = cosine_similarity(summary_matrix, document_tfidf_vector)
+    similarity = cosine_similarity(corpus_matrix, document_tfidf_vector)
     similarity = list(similarity)
 
     # Add an index column to the list
@@ -92,9 +90,9 @@ def get_similar_movies(row, tfidf_vectorizer, summary_matrix):
     similarity = sorted(similarity, key=lambda x: x[1], reverse=True)
 
     # Keep track of the 2 most similar movies to the selected movie to be guessed
-    top_summary_similarity = similarity[0:3]
+    top_similarity = similarity[0:3]
 
-    return top_summary_similarity
+    return top_similarity
 
 
 def build_tfidf_vectorizer(corpus):

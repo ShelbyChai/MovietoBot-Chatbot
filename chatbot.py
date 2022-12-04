@@ -1,19 +1,23 @@
+import ast
 import random
 
 import pandas as pd
 
 from identity_management import get_user_name
-from intent_matching import build_intent_matching_classifier
+from intent_matching_classifier import build_intent_matching_classifier
 # Import bot response functions
 from response_generator import genre_response, similar_genre_response, fallback_genre_response, display_movie_summary, \
     correct_answer_response, incorrect_answer_response, get_datetime_response
 from similarity_information_retrieval import RECOMMENDATION_LABEL, GAME_LABEL, SMALL_TALK_LABEL, \
-    IDENTITY_MANAGEMENT_LABEL
-from similarity_information_retrieval import build_genre_tfidf_vectorizer, build_summary_vectorizer, get_similar_movies, \
+    IDENTITY_MANAGEMENT_LABEL, QUESTION_ANSWER_LABEL
+from similarity_information_retrieval import build_genre_tfidf_vectorizer, build_tfidf_vectorizer_with_matrix, \
+    rank_similar_documents, \
     calculate_it_similarity, calculate_similarity, build_tfidf_vectorizer
 
 # --------------------------------------------------------------------------
+# Load the data
 movie_df = pd.read_csv(r"data/information_retrieval/movie_dataset.csv")
+question_answer_df = pd.read_csv(r"data/information_retrieval/movie_question_answer.csv")
 
 
 def movie_recommendation(user_input, vectorizer):
@@ -69,7 +73,8 @@ def movie_guessing_game(game_point):
     # Randomize a movie as the answer
     random_movie_index = random.randint(0, len(movie_df))
     # Get 2 similar summary movies based on the random_movie_index
-    index = get_similar_movies(movie_df.loc[random_movie_index], summary_tfidf_vectorizer, summary_matrix)
+    index = rank_similar_documents(movie_df.loc[random_movie_index]['Summary'], summary_tfidf_vectorizer,
+                                   summary_matrix)
     # Keep track of the correct answer
     answer = [index[0][0], movie_df['Title'][index[0][0]], movie_df['Summary'][index[0][0]]]
     # Shuffle the movie title
@@ -106,8 +111,8 @@ def small_talk_and_identity_management(name, user_intent, stop):
     tag = ''
     response = ''
 
-    # Compare and select the highest similarity between the user query and the text in the identity_management_intent corpus
-    for intent in intent_label[user_intent]['intents']:
+    # Select the subcategory with the highest similarity between the user query and the text in the identity_management_intent corpus
+    for intent in intent_corpus[user_intent]['intents']:
         for text in intent['text']:
             # Assign the vectorizer depends on the user intent
             if user_intent == IDENTITY_MANAGEMENT_LABEL:
@@ -157,7 +162,7 @@ def small_talk_and_identity_management(name, user_intent, stop):
                 print(response)
 
             elif tag == 'RealNameQuery' or tag == 'NameQuery':
-                response = response.replace("<CHATBOT>", "Filmtobot")
+                response = response.replace("<CHATBOT>", bot_name)
                 print("Chatbot: " + response)
 
             else:
@@ -176,22 +181,26 @@ Chatbot
 print("Setting up movie database ....")
 # Build intent matching classifier and tfidf_vectorizer
 genre_tfidf_vectorizer = build_genre_tfidf_vectorizer(movie_df['Genres'])
-[summary_tfidf_vectorizer, summary_matrix] = build_summary_vectorizer(movie_df['Summary'])
-[intent_label, intent_classifier, intent_tfidf_vectorizer] = build_intent_matching_classifier()
-im_tfidf_vectorizer = build_tfidf_vectorizer(intent_label[IDENTITY_MANAGEMENT_LABEL])
-st_tfidf_vectorizer = build_tfidf_vectorizer(intent_label[SMALL_TALK_LABEL])
-print("Chatbot: Hiya, my name is Filmtobot.")
+[summary_tfidf_vectorizer, summary_matrix] = build_tfidf_vectorizer_with_matrix(movie_df['Summary'])
+[intent_corpus, intent_classifier, intent_tfidf_vectorizer] = build_intent_matching_classifier()
+im_tfidf_vectorizer = build_tfidf_vectorizer(intent_corpus[IDENTITY_MANAGEMENT_LABEL])
+st_tfidf_vectorizer = build_tfidf_vectorizer(intent_corpus[SMALL_TALK_LABEL])
+
+question_list = question_answer_df.question.values.tolist()
+[question_vectorizer, question_matrix] = build_tfidf_vectorizer_with_matrix(question_list)
 
 # ---------------------------------
 stop_list = ['Bye', 'Goodbye']
 stop = False
 
 user_name = ""
+bot_name = 'CineBot'
 # Mini Game variables
 user_mini_game_point = 0
 
 # print(genre_tfidf_vectorizer.get_feature_names_out())
 
+print("Chatbot: Hiya, my name is " + bot_name + ".")
 while not stop:
     # Display user's name if we got it
     if user_name != '':
@@ -216,7 +225,7 @@ while not stop:
     if user_query not in stop_list:
         # The confidence level of the chosen class
         intent_prediction_probability = class_probability_dict[user_intent[0]]
-        # print(intent_prediction_probability)
+        print(intent_prediction_probability)
 
         # Only proceed with the intent if the classifier have confidence score on the class
         if intent_prediction_probability >= 0.8:
@@ -229,7 +238,39 @@ while not stop:
             if user_intent == IDENTITY_MANAGEMENT_LABEL or user_intent == SMALL_TALK_LABEL:
                 [user_name, stop] = small_talk_and_identity_management(user_name, user_intent[0], stop)
 
-        elif 0.8 > intent_prediction_probability > 0.7:
+            if user_intent == QUESTION_ANSWER_LABEL:
+                # Get a random response from the intent json file
+                response = random.choice(intent_corpus[QUESTION_ANSWER_LABEL]['intents'][0]['responses'])
+                question_query = input("Chatbot: " + response + "\nQuestion >>> ")
+
+                # Contains the top 3 most similar questions' index and probability
+                top_similarity_questions = rank_similar_documents(question_query, question_vectorizer, question_matrix)
+                top_similarity_questions = [[item_list[0], item_list[1].item()] for item_list in
+                                            top_similarity_questions]
+
+                print(top_similarity_questions)
+                top_similarity = top_similarity_questions[0][1]
+
+                answers = question_answer_df.iloc[top_similarity_questions[0][0]]['answers']
+                answer_list = ast.literal_eval(answers)
+                print(top_similarity)
+
+                # Provide the highest matched similarity answer correspond to the question
+                if top_similarity >= 0.7:
+                    print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
+                elif 0.7 > top_similarity > 0.5:
+                    question = question_answer_df.iloc[top_similarity_questions[0][0]]['question']
+                    if user_name != "":
+                        user_reprompt = input("Chatbot: Are you suggesting -> " + question + "\n" + user_name + ": ")
+                    else:
+                        user_reprompt = input("Chatbot: Are you suggesting -> " + question + "\nUser: ")
+
+                    if user_reprompt.strip().lower() == 'yes':
+                        print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
+                    else:
+                        print("Chatbot: Sorry, I don't know the answer to your question.")
+
+        elif 0.8 > intent_prediction_probability > 0.6:
             print("Chatbot: Can you please reformulate your query?")
 
         else:
@@ -243,7 +284,6 @@ while not stop:
 # TODO: Save the model using pickle
 
 # Functionality
-# TODO: Question and Answering (User ask question)
 # TODO: More functionality on Information retrieval (Retrieve Summary? Generate story from keyword?)
 # Generate movie plot: https://www.kaggle.com/datasets/jrobischon/wikipedia-movie-plots
 # TODO: Save question to the data

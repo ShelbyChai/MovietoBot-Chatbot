@@ -1,0 +1,26 @@
+{
+  "intents": [
+    {
+      "intent": "QuestionQuery",
+      "text": [
+        "I have some question in mind",
+        "Can I ask some question?",
+        "May I ask some question",
+        "I have some question",
+        "I have some query",
+        "I would like to ask some quiz",
+        "Is it alright if I ask question",
+        "I have some query for you",
+        "I have some quiz for you",
+        "Can I ask you something",
+        "I need you to answer some question for me",
+        "I want to ask you something"
+      ],
+      "responses": [
+        "Of course! What question do you have for me?",
+        "I am ready whenever you are!",
+        "Ask ahead!"
+      ]
+    }
+  ]
+}
