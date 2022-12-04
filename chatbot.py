@@ -2,6 +2,7 @@ import ast
 import random
 import pandas as pd
 
+from csv import writer
 from identity_management import get_user_name
 from intent_matching_classifier import build_intent_matching_classifier
 # Import bot response functions
@@ -257,6 +258,7 @@ while not stop:
                 if top_similarity >= 0.7:
                     print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
 
+                # Suggest if the user is asking the specific question if low similarity is returned
                 elif 0.7 > top_similarity > 0.5:
                     question = question_answer_df.iloc[top_similarity_questions[0][0]]['question']
 
@@ -265,8 +267,18 @@ while not stop:
                     else:
                         user_re_prompt = input("Chatbot: Are you suggesting -> " + question + "\nUser: ")
 
+                    # If the user agrees to the suggestion then provide the answer and append the new question and
+                    # answer pair to the movie question answer dataset
                     if user_re_prompt.strip().lower() == 'yes':
                         print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
+
+                        new_question_answer_pair = [len(question_answer_df.index), question_query,
+                                                    question_answer_df.iloc[top_similarity_questions[0][0]]['answers']]
+
+                        with open('./data/information_retrieval/movie_question_answer.csv', 'a') as qna_csv:
+                            writer_instance = writer(qna_csv)
+                            writer_instance.writerow(new_question_answer_pair)
+                            qna_csv.close()
                     else:
                         print("Chatbot: Sorry, I don't know the answer to your question.")
 
@@ -283,4 +295,4 @@ while not stop:
 # TODO: Save the model using pickle
 
 # Functionality
-# TODO: Save question to the data
+# TODO: Conversation fallback Disambiguation
