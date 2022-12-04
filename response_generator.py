@@ -81,10 +81,14 @@ Games
 """
 
 
-def display_movie_summary(title_dict, movie_summary):
-    print("Chatbot: Let's get rolling! For this mini game, I will scramble 2 similar movie plot with the movie "
-          "and you have to guess it. \n" "Which movie below do you think correspond to this given summary -> " +
-          movie_summary + "\n")
+def display_movie_summary(title_dict, movie_summary, user_name):
+    response = "For this mini game, I will scramble 2 similar movie plot with the movie and you have to guess it. \n\n" "Which movie below do you think correspond to this given summary -> " + movie_summary + "\n"
+
+    if user_name != "":
+        response = "Chatbot: Let's get started " + user_name + "! " + response
+        print(response)
+    else:
+        print("Chatbot: " + response)
 
     for index, title in enumerate(title_dict.values()):
         print(str(index + 1) + ". " + title)

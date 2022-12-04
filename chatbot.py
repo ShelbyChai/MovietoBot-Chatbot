@@ -80,7 +80,7 @@ def movie_guessing_game(game_point):
         index[2][0]: movie_df['Title'][index[2][0]],
     }
 
-    display_movie_summary(title_dict, answer[2])
+    display_movie_summary(title_dict, answer[2], user_name)
 
     user_answer = input('Your answer >>> ')
 
@@ -99,53 +99,74 @@ def movie_guessing_game(game_point):
     return game_point
 
 
-def identity_management(name):
-    # print('Doing identity management')
-    im_similarity = 0
-    im_maximum_similarity = 0
-    im_tag = ''
-    identity_response = ''
+def small_talk_and_identity_management(name, user_intent, stop):
+    similarity = 0
+    maximum_similarity = 0
+    tag = ''
+    response = ''
 
-    # Compare and select the highest similarity between the user query and the text in the identity_management_intent
-    # corpus
-    for intent in intent_label[IDENTITY_MANAGEMENT_LABEL]['intents']:
+    # Compare and select the highest similarity between the user query and the text in the identity_management_intent corpus
+    for intent in intent_label[user_intent]['intents']:
         for text in intent['text']:
-            im_similarity = calculate_similarity(user_query, text, im_tfidf_vectorizer)
-            if im_similarity > im_maximum_similarity:
-                im_maximum_similarity = im_similarity
-                im_tag = intent['intent']
-                identity_response = random.choice(intent['responses'])
+            # Assign the vectorizer depends on the user intent
+            if user_intent == IDENTITY_MANAGEMENT_LABEL:
+                similarity = calculate_similarity(user_query, text, im_tfidf_vectorizer)
+            elif user_intent == SMALL_TALK_LABEL:
+                similarity = calculate_similarity(user_query, text, st_tfidf_vectorizer)
 
-    if im_maximum_similarity > 0.7:
-        # Store the username
-        if im_tag == "InitialUserName":
-            print('Chatbot: ' + identity_response)
-            name_query = input("User: ")
-            name = get_user_name(name_query, im_tfidf_vectorizer.get_feature_names_out())
-            print('Chatbot: Great! Hi ' + name + ", nice to meet you! What can I do for you today?")
+            if similarity > maximum_similarity:
+                maximum_similarity = similarity
+                tag = intent['intent']
+                response = random.choice(intent['responses'])
 
-        # Change the username
-        if im_tag == "ChangeUserName":
-            name = get_user_name(user_query, im_tfidf_vectorizer.get_feature_names_out())
-            identity_response = identity_response.replace("<HUMAN>", name)
-            print('Chatbot: ' + identity_response)
+    if maximum_similarity > 0.7:
+        if user_intent == IDENTITY_MANAGEMENT_LABEL:
+            # Store the username
+            if tag == "InitialUserName":
+                print('Chatbot: ' + response)
+                name_query = input("User: ")
+                name = get_user_name(name_query, im_tfidf_vectorizer.get_feature_names_out())
+                print('Chatbot: Great! Hi ' + name + ", nice to meet you! What can I do for you today?")
 
-        # Explicit name output
-        if im_tag == "UserNameQuery":
-            if name == "":
-                print("Chatbot: I still don't know your name.")
+            # Change the username
+            if tag == "ChangeUserName":
+                name = get_user_name(user_query, im_tfidf_vectorizer.get_feature_names_out())
+                response = response.replace("<HUMAN>", name)
+                print("Chatbot: " + response)
+
+            # Explicit name output
+            if tag == "UserNameQuery":
+                if name == "":
+                    print("Chatbot: I still don't know your name.")
+                else:
+                    response = response.replace("<HUMAN>", name)
+                    print("Chatbot: " + response)
+
+        if user_intent == SMALL_TALK_LABEL:
+            if tag == 'GoodBye':
+                stop = True
+                print("Chatbot: " + response)
+
+            elif tag == 'TimeQuery':
+                response = get_datetime_response(response)
+                print(response)
+
+            elif tag == 'ScoreQuery':
+                response = "Chatbot: " + response + str(user_mini_game_point)
+                print(response)
+
+            elif tag == 'RealNameQuery' or tag == 'NameQuery':
+                response = response.replace("<CHATBOT>", "Filmtobot")
+                print("Chatbot: " + response)
+
             else:
-                identity_response = identity_response.replace("<HUMAN>", name)
-                print("Chatbot: " + identity_response)
-
-        # print(tag)
-        print(im_maximum_similarity)
+                print("Chatbot: " + response)
 
     else:
         print("Chatbot: Sorry, I don't understand.")
-        print(im_maximum_similarity)
+        print(maximum_similarity)
 
-    return name
+    return [name, stop]
 
 
 """
@@ -188,11 +209,11 @@ while not stop:
     class_probability_dict = {class_keys[i]: probability_values[i] for i in range(len(class_keys))}
 
     print(class_probability_dict)
-    # print(user_intent)
+    print(user_intent)
 
     if user_query not in stop_list:
         intent_prediction_probability = class_probability_dict[user_intent[0]]
-        print(intent_prediction_probability)
+        # print(intent_prediction_probability)
 
         # Only proceed with the intent if the classifier have confidence score on the class
         if intent_prediction_probability >= 0.8:
@@ -202,51 +223,8 @@ while not stop:
             if user_intent == GAME_LABEL:
                 user_mini_game_point = movie_guessing_game(user_mini_game_point)
 
-            if user_intent == SMALL_TALK_LABEL:
-                st_similarity = 0
-                st_maximum_similarity = 0
-                st_tag = ''
-                response = ''
-                # goodbye, time, score, name
-                print('Doing small talk')
-
-                for intent in intent_label[SMALL_TALK_LABEL]['intents']:
-                    for text in intent['text']:
-                        st_similarity = calculate_similarity(user_query, text, st_tfidf_vectorizer)
-                        if st_similarity > st_maximum_similarity:
-                            st_maximum_similarity = st_similarity
-                            st_tag = intent['intent']
-                            response = random.choice(intent['responses'])
-
-                if st_maximum_similarity > 0.7:
-                    if st_tag == 'GoodBye':
-                        stop = True
-                        print("Chatbot: " + response)
-
-                    elif st_tag == 'TimeQuery':
-                        response = get_datetime_response(response)
-                        print(response)
-
-                    elif st_tag == 'ScoreQuery':
-                        response = "Chatbot: " + response + str(user_mini_game_point)
-                        print(response)
-
-                    elif st_tag == 'RealNameQuery' or st_tag == 'NameQuery':
-                        response = response.replace("<CHATBOT>", "Movietobot")
-                        print(response)
-
-                    else:
-                        print(response)
-
-                    print(st_maximum_similarity)
-                    print(st_tag)
-
-                else:
-                    print("Chatbot: Sorry, I don't understand.")
-                    print(st_maximum_similarity)
-
-            if user_intent == IDENTITY_MANAGEMENT_LABEL:
-                user_name = identity_management(user_name)
+            if user_intent == IDENTITY_MANAGEMENT_LABEL or user_intent == SMALL_TALK_LABEL:
+                [user_name, stop] = small_talk_and_identity_management(user_name, user_intent[0], stop)
 
         elif 0.8 > intent_prediction_probability > 0.7:
             print("Chatbot: Can you please reformulate your query?")
@@ -264,9 +242,7 @@ while not stop:
 # TODO: Maybe 1 intent_prediction_probability for all and provide fallback mechanism if sim 0.7-0.8
 
 # Functionality
-# TODO: Small Talk
-# TODO: Question and Answering (Bot ask question or user ask question)
+# TODO: Question and Answering (User ask question)
 # TODO: More functionality on Information retrieval (Retrieve Summary? Generate story from keyword?)
 # Generate movie plot: https://www.kaggle.com/datasets/jrobischon/wikipedia-movie-plots
-# TODO: Change the identity management vectorizer and similarity to general name and move to similarity
 # TODO: Save question to the data
