@@ -12,7 +12,8 @@
         "Thank you, bye",
         "Thank you, goodbye",
         "Thanks goodbye",
-        "Thanks good bye"
+        "Thanks good bye",
+        "Goodbye and thank you"
       ],
       "responses": [
         "See you later",
@@ -32,12 +33,14 @@
         "Time",
         "tell me the date",
         "what is the date?",
-        "date"
+        "date",
+        "Tell me the current time",
+        "Current time",
+        "Current date"
       ],
       "responses": [
-        "One moment",
-        "One sec",
-        "One second"
+        "Today is ",
+        "It is "
       ]
     },
     {
@@ -46,50 +49,19 @@
         "What is my current score?",
         "What is my point?",
         "Can you tell me my current point?",
-        "Score",
-        "Point",
-        "Tell me my current point"
-      ]
-    },
-    {
-      "intent": "CourtesyGreeting",
-      "text": [
-        "How are you?",
-        "Hi how are you?",
-        "Hello how are you?",
-        "Hola how are you?",
-        "How are you doing?",
-        "Hope you are doing well?",
-        "Hello hope you are doing well?"
+        "Tell me my current point",
+        "Tell me the score",
+        "May I know my score for the game",
+        "score game",
+        "point game",
+        "Please remind me of my game score",
+        "Do you remember my game score?",
+        "What is my point again?"
       ],
       "responses": [
-        "Hello, I am great, how are you? Please tell me your GeniSys user",
-        "Hello, how are you? I am great thanks! Please tell me your GeniSys user",
-        "Hello, I am good thank you, how are you? Please tell me your GeniSys user",
-        "Hi, I am great, how are you? Please tell me your GeniSys user",
-        "Hi, how are you? I am great thanks! Please tell me your GeniSys user",
-        "Hi, I am good thank you, how are you? Please tell me your GeniSys user",
-        "Hi, good thank you, how are you? Please tell me your GeniSys user"
-      ]
-    },
-    {
-      "intent": "CourtesyGreetingResponse",
-      "text": [
-        "Good thanks! My user is Adam",
-        "Good thanks! This is Adam",
-        "Good thanks! I am Adam",
-        "Good thanks! It is Adam",
-        "Great thanks! My user is Bella",
-        "Great thanks! This is Bella",
-        "Great thanks! I am Bella",
-        "Great thanks! It is Bella"
-      ],
-      "responses": [
-        "Great! Hi <HUMAN>! How can I help?",
-        "Good! Hi <HUMAN>, how can I help you?",
-        "Cool! Hello <HUMAN>, what can I do for you?",
-        "OK! Hola <HUMAN>, how can I help you?",
-        "OK! hi <HUMAN>, what can I do for you?"
+        "Your current game score is ",
+        "Currently your mini game score is ",
+        "Your point is "
       ]
     },
     {
@@ -103,9 +75,9 @@
         "Tell me your name?"
       ],
       "responses": [
-        "You can call me Geni",
-        "You may call me Geni",
-        "Call me Geni"
+        "You can call me <CHATBOT>",
+        "You may call me <CHATBOT>",
+        "Call me <CHATBOT>"
       ]
     },
     {
@@ -117,12 +89,14 @@
         "Tell me your real name?",
         "Your real name?",
         "Your real name please?",
-        "Your real name please?"
+        "Your real name please?",
+        "I want to know your real name",
+        "May I know your real name"
       ],
       "responses": [
-        "My name is GeniSys",
-        "GeniSys",
-        "My real name is GeniSys"
+        "My name is <CHATBOT>",
+        "<CHATBOT>",
+        "My real name is <CHATBOT>"
       ]
     },
     {
@@ -169,7 +143,10 @@
         "Do you know what I am saying",
         "Do you get me",
         "Comprendo",
-        "Know what I mean"
+        "Know what I mean",
+        "Do you know what I am talking about?",
+        "Can you understand me?",
+        "Can you comprehend my speech?"
       ],
       "responses": [
         "Well I would not be a very clever AI if I did not would I?",
@@ -227,12 +204,15 @@
       "intent": "Clever",
       "text": [
         "You are very clever",
-        "You are a very clever girl",
+        "You are a very clever chatbot",
         "You are very intelligent",
-        "You are a very intelligent girl",
-        "You are a genious",
-        "Clever girl",
-        "Genious"
+        "You are a very intelligent chatbot",
+        "You are a genius",
+        "Clever chatbot",
+        "Genius",
+        "You are quite clever for a chatbot",
+        "You are very smart",
+        "You are build different"
       ],
       "responses": [
         "Thank you, I was trained that way",

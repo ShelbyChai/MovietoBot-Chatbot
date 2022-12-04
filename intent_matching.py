@@ -6,13 +6,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 
-analyzer = TfidfVectorizer().build_analyzer()
-sb_stemmer = SnowballStemmer('english')
-
-
-def stemmed_words(doc):
-    return (sb_stemmer.stem(w) for w in analyzer(doc))
-
 
 def build_intent_matching_classifier():
     with open('./data/intent_matching/small_talk_intent.json') as f:
@@ -41,6 +34,7 @@ def build_intent_matching_classifier():
     # Store the sub category of the intent
     # intent_category = []
 
+    index = 0
     for label in intent_label.keys():
         for intent in intent_label[label]['intents']:
             if intent['intent'] not in intent_classes:
@@ -50,8 +44,13 @@ def build_intent_matching_classifier():
                 data_inputs.append(text)
                 data_intents.append(label)
                 # data_intents.append(intent['intent'])
-
+        index += 1
     # print(intent_classes)
+    analyzer = TfidfVectorizer().build_analyzer()
+    sb_stemmer = SnowballStemmer('english')
+
+    def stemmed_words(doc):
+        return (sb_stemmer.stem(w) for w in analyzer(doc))
 
     intent_tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'), ngram_range=(1, 2),
                                               analyzer=stemmed_words)
@@ -62,22 +61,3 @@ def build_intent_matching_classifier():
 
     return [intent_label, intent_classifier, intent_tfidf_vectorizer]
 
-
-def build_tag_classifier(identity_intent):
-    data_inputs = []
-    data_intents = []
-
-    for intent in identity_intent['intents']:
-        for text in intent['text']:
-            data_inputs.append(text)
-            data_intents.append(intent['intent'])
-
-    intent_tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'), ngram_range=(1, 2),
-                                              analyzer=stemmed_words)
-
-    x_train_tf = intent_tfidf_vectorizer.fit_transform(data_inputs)
-
-    # Train the decision tree classifier
-    intent_classifier = SVC(probability=True).fit(x_train_tf, data_intents)
-
-    return [intent_classifier, intent_tfidf_vectorizer]

@@ -1,5 +1,5 @@
 import random
-
+from datetime import datetime
 """
 Genres
 """
@@ -112,3 +112,16 @@ def incorrect_answer_response(answer, game_point):
     random_response = random.choice(response)
 
     return random_response
+
+
+"""
+Date Time
+"""
+
+
+def get_datetime_response(response):
+    present = datetime.now()
+    day_of_week = datetime.today().strftime('%A')
+    date_time = present.strftime("%d/%B/%Y %H:%M")
+
+    return response + str(day_of_week) + ", " + str(date_time)

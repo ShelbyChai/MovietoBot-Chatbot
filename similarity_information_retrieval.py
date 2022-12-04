@@ -95,3 +95,31 @@ def get_similar_movies(row, tfidf_vectorizer, summary_matrix):
     top_summary_similarity = similarity[0:3]
 
     return top_summary_similarity
+
+
+def build_tfidf_vectorizer(corpus):
+    data_inputs = []
+
+    for intent in corpus['intents']:
+        for text in intent['text']:
+            data_inputs.append(text)
+
+    tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'),
+                                       analyzer=stemmed_words, ngram_range=(1, 2))
+
+    tfidf_vectorizer.fit_transform(data_inputs)
+
+    # print(im_matrix)
+    # print(tfidf_vectorizer.get_feature_names_out())
+
+    return tfidf_vectorizer
+
+
+def calculate_similarity(query, document, vectorizer):
+    query_tfidf_vector = vectorizer.transform([query])
+    document_tfidf_vector = vectorizer.transform([document])
+
+    # Compute the cosine similarity between the user_query and genre row document
+    similarity = cosine_similarity(query_tfidf_vector, document_tfidf_vector)
+
+    return similarity

@@ -69,7 +69,8 @@
         "What name do you call me by?",
         "Tell me my name",
         "How do you call me?",
-        "Do you remember me?"
+        "Do you remember me?",
+        "Do you remember my name?"
       ],
       "responses": [
         "You are <HUMAN>! How can I help?",

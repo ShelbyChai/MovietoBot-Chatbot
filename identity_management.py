@@ -1,10 +1,21 @@
 from nltk import pos_tag
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 
-def get_user_name(user_input):
-    common_word = ["name", "people", "please", "call", "me", "my", "change", "user", "username"]
+def get_user_name(user_input, vocabulary):
+    vocabulary = vocabulary.tolist()
+    common_word = ["name", "people", "please", "call", "me", "my", "change"]
+    # Extend the common word with the query vocabulary
+    common_word.extend(vocabulary)
+    common_word.remove("adam")
+    common_word.remove("bella")
+
+    # print(common_word)
+
     tokens = word_tokenize(user_input)
 
     # Remove text that is present in the COMMON_WORD , stopword list and not alphabetic letters
