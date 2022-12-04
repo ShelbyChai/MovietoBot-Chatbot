@@ -2,14 +2,15 @@ import random
 
 import pandas as pd
 
+from identity_management import get_user_name
+from intent_matching import build_intent_matching_classifier
 # Import bot response functions
 from response_generator import genre_response, similar_genre_response, fallback_genre_response, display_movie_summary, \
     correct_answer_response, incorrect_answer_response, get_datetime_response
+from similarity_information_retrieval import RECOMMENDATION_LABEL, GAME_LABEL, SMALL_TALK_LABEL, \
+    IDENTITY_MANAGEMENT_LABEL
 from similarity_information_retrieval import build_genre_tfidf_vectorizer, build_summary_vectorizer, get_similar_movies, \
     calculate_it_similarity, calculate_similarity, build_tfidf_vectorizer
-from similarity_information_retrieval import RECOMMENDATION_LABEL, GAME_LABEL, SMALL_TALK_LABEL, IDENTITY_MANAGEMENT_LABEL
-from intent_matching import build_intent_matching_classifier
-from identity_management import get_user_name
 
 # --------------------------------------------------------------------------
 movie_df = pd.read_csv(r"data/information_retrieval/movie_dataset.csv")
@@ -203,6 +204,7 @@ while not stop:
     user_intent = intent_classifier.predict(vectorized_user_query)
 
     class_keys = intent_classifier.classes_.tolist()
+    # The probability distribution of the class
     probability_values = intent_classifier.predict_proba(vectorized_user_query).tolist()[0]
 
     # Construct an intent probability distribution dictionary
@@ -212,6 +214,7 @@ while not stop:
     print(user_intent)
 
     if user_query not in stop_list:
+        # The confidence level of the chosen class
         intent_prediction_probability = class_probability_dict[user_intent[0]]
         # print(intent_prediction_probability)
 
@@ -236,10 +239,8 @@ while not stop:
         print("Chatbot: Bye! See you soon.")
         stop = True
 
-
 # TODO: Hyperparameter tuning
 # TODO: Save the model using pickle
-# TODO: Maybe 1 intent_prediction_probability for all and provide fallback mechanism if sim 0.7-0.8
 
 # Functionality
 # TODO: Question and Answering (User ask question)

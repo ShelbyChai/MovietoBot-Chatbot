@@ -3,7 +3,6 @@ import json
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 
 
@@ -27,24 +26,15 @@ def build_intent_matching_classifier():
         'identity management': identity_management_intent
     }
 
-    # Store the types of intent: small_talk, information_retrieval or identity management
-    intent_classes = []
     data_inputs = []
     data_intents = []
-    # Store the sub category of the intent
-    # intent_category = []
 
-    index = 0
     for label in intent_label.keys():
         for intent in intent_label[label]['intents']:
-            if intent['intent'] not in intent_classes:
-                intent_classes.append(intent['intent'])
-
             for text in intent['text']:
                 data_inputs.append(text)
                 data_intents.append(label)
-                # data_intents.append(intent['intent'])
-        index += 1
+
     # print(intent_classes)
     analyzer = TfidfVectorizer().build_analyzer()
     sb_stemmer = SnowballStemmer('english')
@@ -60,4 +50,3 @@ def build_intent_matching_classifier():
     intent_classifier = SVC(probability=True).fit(x_train_tf, data_intents)
 
     return [intent_label, intent_classifier, intent_tfidf_vectorizer]
-

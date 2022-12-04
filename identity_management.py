@@ -1,9 +1,6 @@
 from nltk import pos_tag
-from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from nltk.stem.snowball import SnowballStemmer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+from nltk.tokenize import word_tokenize
 
 
 def get_user_name(user_input, vocabulary):
