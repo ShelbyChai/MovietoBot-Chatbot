@@ -109,7 +109,7 @@ def small_talk_and_identity_management(name, user_intent, stop):
     similarity = 0
     maximum_similarity = 0
     tag = ''
-    response = ''
+    bot_response = ''
 
     # Select the subcategory with the highest similarity between the user query and the text in the identity_management_intent corpus
     for intent in intent_corpus[user_intent]['intents']:
@@ -123,50 +123,54 @@ def small_talk_and_identity_management(name, user_intent, stop):
             if similarity > maximum_similarity:
                 maximum_similarity = similarity
                 tag = intent['intent']
-                response = random.choice(intent['responses'])
+                bot_response = random.choice(intent['responses'])
 
     if maximum_similarity > 0.7:
         if user_intent == IDENTITY_MANAGEMENT_LABEL:
             # Store the username
             if tag == "InitialUserName":
-                print('Chatbot: ' + response)
-                name_query = input("User: ")
+                print('Chatbot: ' + bot_response)
+                if user_name != "":
+                    name_query = input(user_name + ": ")
+                else:
+                    name_query = input("User: ")
+
                 name = get_user_name(name_query, im_tfidf_vectorizer.get_feature_names_out())
                 print('Chatbot: Great! Hi ' + name + ", nice to meet you! What can I do for you today?")
 
             # Change the username
             if tag == "ChangeUserName":
                 name = get_user_name(user_query, im_tfidf_vectorizer.get_feature_names_out())
-                response = response.replace("<HUMAN>", name)
-                print("Chatbot: " + response)
+                bot_response = bot_response.replace("<HUMAN>", name)
+                print("Chatbot: " + bot_response)
 
             # Explicit name output
             if tag == "UserNameQuery":
                 if name == "":
                     print("Chatbot: I still don't know your name.")
                 else:
-                    response = response.replace("<HUMAN>", name)
-                    print("Chatbot: " + response)
+                    bot_response = bot_response.replace("<HUMAN>", name)
+                    print("Chatbot: " + bot_response)
 
         if user_intent == SMALL_TALK_LABEL:
             if tag == 'GoodBye':
                 stop = True
-                print("Chatbot: " + response)
+                print("Chatbot: " + bot_response)
 
             elif tag == 'TimeQuery':
-                response = get_datetime_response(response)
-                print(response)
+                bot_response = get_datetime_response(bot_response)
+                print(bot_response)
 
             elif tag == 'ScoreQuery':
-                response = "Chatbot: " + response + str(user_mini_game_point)
-                print(response)
+                bot_response = "Chatbot: " + bot_response + str(user_mini_game_point)
+                print(bot_response)
 
             elif tag == 'RealNameQuery' or tag == 'NameQuery':
-                response = response.replace("<CHATBOT>", bot_name)
-                print("Chatbot: " + response)
+                bot_response = bot_response.replace("<CHATBOT>", bot_name)
+                print("Chatbot: " + bot_response)
 
             else:
-                print("Chatbot: " + response)
+                print("Chatbot: " + bot_response)
 
     else:
         print("Chatbot: Sorry, I don't understand.")
@@ -281,6 +285,9 @@ while not stop:
                             qna_csv.close()
                     else:
                         print("Chatbot: Sorry, I don't know the answer to your question.")
+
+                else:
+                    print("Chatbot: Sorry, I don't know the answer to your question.")
 
         elif 0.8 > intent_prediction_probability > 0.6:
             print("Chatbot: Can you please reformulate your query?")
