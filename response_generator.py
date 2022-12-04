@@ -76,7 +76,11 @@ def genres_parsing(genres):
     return genres
 
 
-# Mini Game -----
+"""
+Games
+"""
+
+
 def display_movie_summary(title_dict, movie_summary):
     print("Chatbot: Let's get rolling! For this mini game, I will scramble 2 similar movie plot with the movie "
           "and you have to guess it. \n" "Which movie below do you think correspond to this given summary -> " +

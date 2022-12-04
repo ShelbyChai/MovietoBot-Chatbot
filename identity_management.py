@@ -1,57 +1,10 @@
 from nltk import pos_tag
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from nltk.stem.snowball import SnowballStemmer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 
-analyzer = TfidfVectorizer().build_analyzer()
-sb_stemmer = SnowballStemmer('english')
-
-
-def stemmed_words(doc):
-    return (sb_stemmer.stem(w) for w in analyzer(doc))
-
-
-def build_identity_management_vectorizer(identity_management_corpus):
-    identity_management_inputs = []
-
-    for intent in identity_management_corpus['intents']:
-        for text in intent['text']:
-            identity_management_inputs.append(text)
-
-    tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'),
-                                       analyzer=stemmed_words, ngram_range=(1, 2))
-
-    im_matrix = tfidf_vectorizer.fit_transform(identity_management_inputs)
-
-    # print(im_matrix)
-    # print(tfidf_vectorizer.get_feature_names_out())
-
-    return [tfidf_vectorizer, im_matrix]
-
-
-def calculate_im_similarity(query, document, vectorizer):
-    query_tfidf_vector = vectorizer.transform([query])
-    document_tfidf_vector = vectorizer.transform([document])
-
-    # Compute the cosine similarity between the user_query and genre row document
-    similarity = cosine_similarity(query_tfidf_vector, document_tfidf_vector)
-
-    return similarity
-
-
-def get_user_name(user_input, vocabulary):
-    vocabulary = vocabulary.tolist()
-    common_word = ["name", "people", "please", "call", "me", "my", "change"]
-    # Extend the common word with the query vocabulary
-    common_word.extend(vocabulary)
-    common_word.remove("adam")
-    common_word.remove("bella")
-
-    # print(common_word)
-
+def get_user_name(user_input):
+    common_word = ["name", "people", "please", "call", "me", "my", "change", "user", "username"]
     tokens = word_tokenize(user_input)
 
     # Remove text that is present in the COMMON_WORD , stopword list and not alphabetic letters
