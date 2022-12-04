@@ -508,6 +508,22 @@
         "That is an difficult question, can you prove that you are?",
         "That depends, can you prove that you are?"
       ]
+    },
+    {
+      "intent": "FunctionalityQuery",
+      "text": [
+        "What can you do?",
+        "Tell me the things you can do",
+        "What functionality do you have?",
+        "What stuff can you do again",
+        "Can you tell me what you can do",
+        "Can you do ",
+        "What more can you do",
+        "Tell me your function"
+      ],
+      "responses": [
+        "I am capable of having remember you, having some small conversation, answering questions, recommend movies based on genres as well as giving you a movie quiz!"
+      ]
     }
   ]
 }

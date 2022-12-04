@@ -1,6 +1,5 @@
 import ast
 import random
-
 import pandas as pd
 
 from identity_management import get_user_name
@@ -185,7 +184,6 @@ genre_tfidf_vectorizer = build_genre_tfidf_vectorizer(movie_df['Genres'])
 [intent_corpus, intent_classifier, intent_tfidf_vectorizer] = build_intent_matching_classifier()
 im_tfidf_vectorizer = build_tfidf_vectorizer(intent_corpus[IDENTITY_MANAGEMENT_LABEL])
 st_tfidf_vectorizer = build_tfidf_vectorizer(intent_corpus[SMALL_TALK_LABEL])
-
 question_list = question_answer_df.question.values.tolist()
 [question_vectorizer, question_matrix] = build_tfidf_vectorizer_with_matrix(question_list)
 
@@ -194,7 +192,7 @@ stop_list = ['Bye', 'Goodbye']
 stop = False
 
 user_name = ""
-bot_name = 'CineBot'
+bot_name = "CineBot"
 # Mini Game variables
 user_mini_game_point = 0
 
@@ -258,14 +256,16 @@ while not stop:
                 # Provide the highest matched similarity answer correspond to the question
                 if top_similarity >= 0.7:
                     print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
+
                 elif 0.7 > top_similarity > 0.5:
                     question = question_answer_df.iloc[top_similarity_questions[0][0]]['question']
-                    if user_name != "":
-                        user_reprompt = input("Chatbot: Are you suggesting -> " + question + "\n" + user_name + ": ")
-                    else:
-                        user_reprompt = input("Chatbot: Are you suggesting -> " + question + "\nUser: ")
 
-                    if user_reprompt.strip().lower() == 'yes':
+                    if user_name != "":
+                        user_re_prompt = input("Chatbot: Are you suggesting -> " + question + "\n" + user_name + ": ")
+                    else:
+                        user_re_prompt = input("Chatbot: Are you suggesting -> " + question + "\nUser: ")
+
+                    if user_re_prompt.strip().lower() == 'yes':
                         print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
                     else:
                         print("Chatbot: Sorry, I don't know the answer to your question.")
@@ -280,10 +280,7 @@ while not stop:
         print("Chatbot: Bye! See you soon.")
         stop = True
 
-# TODO: Hyperparameter tuning
 # TODO: Save the model using pickle
 
 # Functionality
-# TODO: More functionality on Information retrieval (Retrieve Summary? Generate story from keyword?)
-# Generate movie plot: https://www.kaggle.com/datasets/jrobischon/wikipedia-movie-plots
 # TODO: Save question to the data

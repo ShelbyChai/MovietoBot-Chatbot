@@ -52,7 +52,7 @@ def build_intent_matching_classifier():
                                               analyzer=stemmed_words)
     x_train_tf = intent_tfidf_vectorizer.fit_transform(data_inputs)
 
-    # Train the decision tree classifier
-    intent_classifier = SVC(probability=True).fit(x_train_tf, data_intents)
+    # Train the classifier
+    intent_classifier = SVC(random_state=42, probability=True).fit(x_train_tf, data_intents)
 
     return [intent_label, intent_classifier, intent_tfidf_vectorizer]
