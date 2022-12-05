@@ -211,7 +211,7 @@ def question_and_answer():
 
         # If the user agrees to the suggestion then provide the answer and append the new question and
         # answer pair to the movie question answer dataset
-        if user_re_prompt.strip().lower() == 'yes':
+        if 'yes' in user_re_prompt.strip().lower():
             print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
 
             new_question_answer_pair = [len(question_answer_df.index), question_query,
@@ -242,11 +242,21 @@ question_list = question_answer_df.question.values.tolist()
 [question_vectorizer, question_matrix] = build_tfidf_vectorizer_with_matrix(question_list)
 
 # ---------------------------------
+intent_fallback_suggestion = {
+    RECOMMENDATION_LABEL: "Are you suggesting me to recommend you a movie?",
+    GAME_LABEL: "Are you suggesting to play a game?",
+    SMALL_TALK_LABEL: "Are you trying to have a small talk with me?",
+    QUESTION_ANSWER_LABEL: "Are you trying to ask me some question?",
+    IDENTITY_MANAGEMENT_LABEL: "Are you trying to do identity management?"
+}
+
 stop_list = ['Bye', 'Goodbye']
 stop = False
 
 user_name = ""
 bot_name = "CineBot"
+n_strike = 0
+
 # Mini Game variables
 user_mini_game_point = 0
 
@@ -263,6 +273,7 @@ while not stop:
     # Intent classification
     vectorized_user_query = intent_tfidf_vectorizer.transform([user_query])
     user_intent = intent_classifier.predict(vectorized_user_query)
+    user_intent = user_intent[0]
 
     class_keys = intent_classifier.classes_.tolist()
     # The probability distribution of the class
@@ -276,11 +287,13 @@ while not stop:
 
     if user_query not in stop_list:
         # The confidence level of the chosen class
-        intent_prediction_probability = class_probability_dict[user_intent[0]]
+        intent_prediction_probability = class_probability_dict[user_intent]
         print(intent_prediction_probability)
 
         # Only proceed with the intent if the classifier have confidence score on the class
         if intent_prediction_probability >= 0.8:
+            n_strike = 0
+
             if user_intent == RECOMMENDATION_LABEL:
                 movie_recommendation(user_query, genre_tfidf_vectorizer)
 
@@ -288,13 +301,50 @@ while not stop:
                 user_mini_game_point = movie_guessing_game(user_mini_game_point)
 
             if user_intent == IDENTITY_MANAGEMENT_LABEL or user_intent == SMALL_TALK_LABEL:
-                [user_name, stop] = small_talk_and_identity_management(user_name, user_intent[0], stop)
+                [user_name, stop] = small_talk_and_identity_management(user_name, user_intent, stop)
 
             if user_intent == QUESTION_ANSWER_LABEL:
                 question_and_answer()
 
-        elif 0.8 > intent_prediction_probability > 0.6:
-            print("Chatbot: Can you please reformulate your query?")
+        # Conversation fallback with a range of confidence threshold and n-strike rule
+        elif 0.8 > intent_prediction_probability > 0.5:
+            response = ""
+            user_re_prompt = ""
+            n_strike += 1
+
+            if n_strike == 1:
+                print(user_intent)
+                response = intent_fallback_suggestion[user_intent]
+
+                print("Chatbot: " + response)
+
+                if user_name != "":
+                    user_re_prompt = input(user_name + ": ")
+                else:
+                    user_re_prompt = input("User: ")
+
+                if 'yes' in user_re_prompt.strip().lower():
+                    if user_intent == RECOMMENDATION_LABEL:
+                        movie_recommendation(user_query, genre_tfidf_vectorizer)
+
+                    if user_intent == GAME_LABEL:
+                        user_mini_game_point = movie_guessing_game(user_mini_game_point)
+
+                    if user_intent == IDENTITY_MANAGEMENT_LABEL or user_intent == SMALL_TALK_LABEL:
+                        [user_name, stop] = small_talk_and_identity_management(user_name, user_intent, stop)
+
+                    if user_intent == QUESTION_ANSWER_LABEL:
+                        question_and_answer()
+
+                else:
+                    print("Chatbot: Sorry, I still don't understand TAT.")
+
+            elif n_strike == 2:
+                print("Chatbot: Can you please reformulate your query? I am capable of remembering my user, having some small conversation, answering questions, recommend movies based on genres as well as giving you a movie quiz.")
+
+            else:
+                n_strike = 0
+                print("Chatbot: Sorry, this is way beyond me TAT.")
 
         else:
             print("Chatbot: Sorry, I don't understand.")
@@ -304,6 +354,3 @@ while not stop:
         stop = True
 
 # TODO: Save the model using pickle
-
-# Functionality
-# TODO: Conversation fallback Disambiguation
