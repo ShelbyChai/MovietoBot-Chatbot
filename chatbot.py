@@ -179,6 +179,55 @@ def small_talk_and_identity_management(name, user_intent, stop):
     return [name, stop]
 
 
+def question_and_answer():
+    # Get a random response from the intent json file
+    response = random.choice(intent_corpus[QUESTION_ANSWER_LABEL]['intents'][0]['responses'])
+    question_query = input("Chatbot: " + response + "\nQuestion >>> ")
+
+    # Contains the top 3 most similar questions' index and probability
+    top_similarity_questions = rank_similar_documents(question_query, question_vectorizer, question_matrix)
+    top_similarity_questions = [[item_list[0], item_list[1].item()] for item_list in
+                                top_similarity_questions]
+
+    print(top_similarity_questions)
+    top_similarity = top_similarity_questions[0][1]
+
+    answers = question_answer_df.iloc[top_similarity_questions[0][0]]['answers']
+    answer_list = ast.literal_eval(answers)
+    print(top_similarity)
+
+    # Provide the highest matched similarity answer correspond to the question
+    if top_similarity >= 0.8:
+        print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
+
+    # Suggest if the user is asking the specific question if low similarity is returned
+    elif 0.8 > top_similarity > 0.6:
+        question = question_answer_df.iloc[top_similarity_questions[0][0]]['question']
+
+        if user_name != "":
+            user_re_prompt = input("Chatbot: Are you suggesting -> " + question + "\n" + user_name + ": ")
+        else:
+            user_re_prompt = input("Chatbot: Are you suggesting -> " + question + "\nUser: ")
+
+        # If the user agrees to the suggestion then provide the answer and append the new question and
+        # answer pair to the movie question answer dataset
+        if user_re_prompt.strip().lower() == 'yes':
+            print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
+
+            new_question_answer_pair = [len(question_answer_df.index), question_query,
+                                        question_answer_df.iloc[top_similarity_questions[0][0]]['answers']]
+
+            with open('./data/information_retrieval/movie_question_answer.csv', 'a', newline='') as qna_csv:
+                writer_instance = writer(qna_csv)
+                writer_instance.writerow(new_question_answer_pair)
+                qna_csv.close()
+        else:
+            print("Chatbot: Sorry, I don't know the answer to your question.")
+
+    else:
+        print("Chatbot: Sorry, I don't know the answer to your question.")
+
+
 """
 Chatbot
 """
@@ -242,52 +291,7 @@ while not stop:
                 [user_name, stop] = small_talk_and_identity_management(user_name, user_intent[0], stop)
 
             if user_intent == QUESTION_ANSWER_LABEL:
-                # Get a random response from the intent json file
-                response = random.choice(intent_corpus[QUESTION_ANSWER_LABEL]['intents'][0]['responses'])
-                question_query = input("Chatbot: " + response + "\nQuestion >>> ")
-
-                # Contains the top 3 most similar questions' index and probability
-                top_similarity_questions = rank_similar_documents(question_query, question_vectorizer, question_matrix)
-                top_similarity_questions = [[item_list[0], item_list[1].item()] for item_list in
-                                            top_similarity_questions]
-
-                print(top_similarity_questions)
-                top_similarity = top_similarity_questions[0][1]
-
-                answers = question_answer_df.iloc[top_similarity_questions[0][0]]['answers']
-                answer_list = ast.literal_eval(answers)
-                print(top_similarity)
-
-                # Provide the highest matched similarity answer correspond to the question
-                if top_similarity >= 0.7:
-                    print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
-
-                # Suggest if the user is asking the specific question if low similarity is returned
-                elif 0.7 > top_similarity > 0.5:
-                    question = question_answer_df.iloc[top_similarity_questions[0][0]]['question']
-
-                    if user_name != "":
-                        user_re_prompt = input("Chatbot: Are you suggesting -> " + question + "\n" + user_name + ": ")
-                    else:
-                        user_re_prompt = input("Chatbot: Are you suggesting -> " + question + "\nUser: ")
-
-                    # If the user agrees to the suggestion then provide the answer and append the new question and
-                    # answer pair to the movie question answer dataset
-                    if user_re_prompt.strip().lower() == 'yes':
-                        print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
-
-                        new_question_answer_pair = [len(question_answer_df.index), question_query,
-                                                    question_answer_df.iloc[top_similarity_questions[0][0]]['answers']]
-
-                        with open('./data/information_retrieval/movie_question_answer.csv', 'a') as qna_csv:
-                            writer_instance = writer(qna_csv)
-                            writer_instance.writerow(new_question_answer_pair)
-                            qna_csv.close()
-                    else:
-                        print("Chatbot: Sorry, I don't know the answer to your question.")
-
-                else:
-                    print("Chatbot: Sorry, I don't know the answer to your question.")
+                question_and_answer()
 
         elif 0.8 > intent_prediction_probability > 0.6:
             print("Chatbot: Can you please reformulate your query?")
