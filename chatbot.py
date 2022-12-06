@@ -125,7 +125,7 @@ def small_talk_and_identity_management(name, user_intent, stop):
                 tag = intent['intent']
                 bot_response = random.choice(intent['responses'])
 
-    if maximum_similarity > 0.7:
+    if maximum_similarity > 0.7 or doing_fallback:
         if user_intent == IDENTITY_MANAGEMENT_LABEL:
             # Store the username
             if tag == "InitialUserName":
@@ -159,7 +159,7 @@ def small_talk_and_identity_management(name, user_intent, stop):
 
             elif tag == 'TimeQuery':
                 bot_response = get_datetime_response(bot_response)
-                print(bot_response)
+                print("Chatbot: " + bot_response)
 
             elif tag == 'ScoreQuery':
                 bot_response = "Chatbot: " + bot_response + str(user_mini_game_point)
@@ -174,7 +174,7 @@ def small_talk_and_identity_management(name, user_intent, stop):
 
     else:
         print("Chatbot: Sorry, I don't understand.")
-        print(maximum_similarity)
+        # print(maximum_similarity)
 
     return [name, stop]
 
@@ -189,12 +189,12 @@ def question_and_answer():
     top_similarity_questions = [[item_list[0], item_list[1].item()] for item_list in
                                 top_similarity_questions]
 
-    print(top_similarity_questions)
+    # print(top_similarity_questions)
     top_similarity = top_similarity_questions[0][1]
 
     answers = question_answer_df.iloc[top_similarity_questions[0][0]]['answers']
     answer_list = ast.literal_eval(answers)
-    print(top_similarity)
+    # print(top_similarity)
 
     # Provide the highest matched similarity answer correspond to the question
     if top_similarity >= 0.8:
@@ -252,6 +252,7 @@ intent_fallback_suggestion = {
 
 stop_list = ['Bye', 'Goodbye']
 stop = False
+doing_fallback = False
 
 user_name = ""
 bot_name = "CineBot"
@@ -282,16 +283,17 @@ while not stop:
     # Construct an intent probability distribution dictionary
     class_probability_dict = {class_keys[i]: probability_values[i] for i in range(len(class_keys))}
 
-    print(class_probability_dict)
-    print(user_intent)
+    # print(class_probability_dict)
+    # print(user_intent)
 
     if user_query not in stop_list:
         # The confidence level of the chosen class
         intent_prediction_probability = class_probability_dict[user_intent]
-        print(intent_prediction_probability)
+        # print(intent_prediction_probability)
 
         # Only proceed with the intent if the classifier have confidence score on the class
         if intent_prediction_probability >= 0.8:
+            doing_fallback = False
             n_strike = 0
 
             if user_intent == RECOMMENDATION_LABEL:
@@ -308,12 +310,13 @@ while not stop:
 
         # Conversation fallback with a range of confidence threshold and n-strike rule
         elif 0.8 > intent_prediction_probability > 0.5:
+            doing_fallback = True
             response = ""
             user_re_prompt = ""
             n_strike += 1
 
             if n_strike == 1:
-                print(user_intent)
+                # print(user_intent)
                 response = intent_fallback_suggestion[user_intent]
 
                 print("Chatbot: " + response)
