@@ -1,5 +1,6 @@
 import ast
 import random
+
 import pandas as pd
 
 from csv import writer
@@ -10,7 +11,7 @@ from response_generator import genre_response, similar_genre_response, fallback_
     correct_answer_response, incorrect_answer_response, get_datetime_response
 from similarity_information_retrieval import RECOMMENDATION_LABEL, GAME_LABEL, SMALL_TALK_LABEL, \
     IDENTITY_MANAGEMENT_LABEL, QUESTION_ANSWER_LABEL
-from similarity_information_retrieval import build_genre_tfidf_vectorizer, build_tfidf_vectorizer_with_matrix, \
+from similarity_information_retrieval import build_movie_recommendation_vectorizer, build_vectorizer_and_matrix, \
     rank_similar_documents, \
     calculate_it_similarity, calculate_similarity, build_tfidf_vectorizer
 
@@ -72,8 +73,9 @@ def movie_guessing_game(game_point):
     game_response = ''
     # Randomize a movie as the answer
     random_movie_index = random.randint(0, len(movie_df))
+    # random_movie_index = 984
     # Get 2 similar summary movies based on the random_movie_index
-    index = rank_similar_documents(movie_df.loc[random_movie_index]['Summary'], summary_tfidf_vectorizer,
+    index = rank_similar_documents(movie_df.loc[random_movie_index]['Summary'], guessing_game_vectorizer,
                                    summary_matrix)
     # Keep track of the correct answer
     answer = [index[0][0], movie_df['Title'][index[0][0]], movie_df['Summary'][index[0][0]]]
@@ -90,7 +92,7 @@ def movie_guessing_game(game_point):
 
     user_answer = input('Your answer >>> ')
 
-    similarity_answer = calculate_it_similarity(user_answer, answer[1], GAME_LABEL, summary_tfidf_vectorizer)
+    similarity_answer = calculate_it_similarity(user_answer, answer[1], GAME_LABEL, guessing_game_vectorizer)
 
     # print(similarity_answer)
 
@@ -116,9 +118,9 @@ def small_talk_and_identity_management(name, user_intent, stop):
         for text in intent['text']:
             # Assign the vectorizer depends on the user intent
             if user_intent == IDENTITY_MANAGEMENT_LABEL:
-                similarity = calculate_similarity(user_query, text, im_tfidf_vectorizer)
+                similarity = calculate_similarity(user_query, text, identity_management_vectorizer)
             elif user_intent == SMALL_TALK_LABEL:
-                similarity = calculate_similarity(user_query, text, st_tfidf_vectorizer)
+                similarity = calculate_similarity(user_query, text, small_talk_vectorizer)
 
             if similarity > maximum_similarity:
                 maximum_similarity = similarity
@@ -135,12 +137,12 @@ def small_talk_and_identity_management(name, user_intent, stop):
                 else:
                     name_query = input("User: ")
 
-                name = get_user_name(name_query, im_tfidf_vectorizer.get_feature_names_out())
+                name = get_user_name(name_query, identity_management_vectorizer.get_feature_names_out())
                 print('Chatbot: Great! Hi ' + name + ", nice to meet you! What can I do for you today?")
 
             # Change the username
             if tag == "ChangeUserName":
-                name = get_user_name(user_query, im_tfidf_vectorizer.get_feature_names_out())
+                name = get_user_name(user_query, identity_management_vectorizer.get_feature_names_out())
                 bot_response = bot_response.replace("<HUMAN>", name)
                 print("Chatbot: " + bot_response)
 
@@ -185,7 +187,7 @@ def question_and_answer():
     question_query = input("Chatbot: " + response + "\nQuestion >>> ")
 
     # Contains the top 3 most similar questions' index and probability
-    top_similarity_questions = rank_similar_documents(question_query, question_vectorizer, question_matrix)
+    top_similarity_questions = rank_similar_documents(question_query, qna_vectorizer, question_matrix)
     top_similarity_questions = [[item_list[0], item_list[1].item()] for item_list in
                                 top_similarity_questions]
 
@@ -201,7 +203,7 @@ def question_and_answer():
         print("Chatbot: The answer to this is " + random.choice(answer_list) + ".")
 
     # Suggest if the user is asking the specific question if low similarity is returned
-    elif 0.8 > top_similarity > 0.6:
+    elif 0.8 > top_similarity > 0.5:
         question = question_answer_df.iloc[top_similarity_questions[0][0]]['question']
 
         if user_name != "":
@@ -232,14 +234,14 @@ def question_and_answer():
 Chatbot
 """
 print("Setting up movie database ....")
-# Build intent matching classifier and tfidf_vectorizer
-genre_tfidf_vectorizer = build_genre_tfidf_vectorizer(movie_df['Genres'])
-[summary_tfidf_vectorizer, summary_matrix] = build_tfidf_vectorizer_with_matrix(movie_df['Summary'])
-[intent_corpus, intent_classifier, intent_tfidf_vectorizer] = build_intent_matching_classifier()
-im_tfidf_vectorizer = build_tfidf_vectorizer(intent_corpus[IDENTITY_MANAGEMENT_LABEL])
-st_tfidf_vectorizer = build_tfidf_vectorizer(intent_corpus[SMALL_TALK_LABEL])
+# Build and initialize the required resources
+movie_recommendation_vectorizer = build_movie_recommendation_vectorizer(movie_df['Genres'])
+[guessing_game_vectorizer, summary_matrix] = build_vectorizer_and_matrix(movie_df['Summary'])
+[intent_corpus, intent_classifier, intent_vectorizer] = build_intent_matching_classifier()
+identity_management_vectorizer = build_tfidf_vectorizer(intent_corpus[IDENTITY_MANAGEMENT_LABEL])
+small_talk_vectorizer = build_tfidf_vectorizer(intent_corpus[SMALL_TALK_LABEL])
 question_list = question_answer_df.question.values.tolist()
-[question_vectorizer, question_matrix] = build_tfidf_vectorizer_with_matrix(question_list)
+[qna_vectorizer, question_matrix] = build_vectorizer_and_matrix(question_list)
 
 # ---------------------------------
 intent_fallback_suggestion = {
@@ -272,13 +274,14 @@ while not stop:
         user_query = input('User: ')
 
     # Intent classification
-    vectorized_user_query = intent_tfidf_vectorizer.transform([user_query])
+    vectorized_user_query = intent_vectorizer.transform([user_query])
     user_intent = intent_classifier.predict(vectorized_user_query)
     user_intent = user_intent[0]
 
     class_keys = intent_classifier.classes_.tolist()
-    # The probability distribution of the class
     probability_values = intent_classifier.predict_proba(vectorized_user_query).tolist()[0]
+    # print(class_keys)
+    # print(probability_values)
 
     # Construct an intent probability distribution dictionary
     class_probability_dict = {class_keys[i]: probability_values[i] for i in range(len(class_keys))}
@@ -289,7 +292,7 @@ while not stop:
     if user_query not in stop_list:
         # The confidence level of the chosen class
         intent_prediction_probability = class_probability_dict[user_intent]
-        # print(intent_prediction_probability)
+        print("Class probability -> " + str(intent_prediction_probability))
 
         # Only proceed with the intent if the classifier have confidence score on the class
         if intent_prediction_probability >= 0.8:
@@ -297,7 +300,7 @@ while not stop:
             n_strike = 0
 
             if user_intent == RECOMMENDATION_LABEL:
-                movie_recommendation(user_query, genre_tfidf_vectorizer)
+                movie_recommendation(user_query, movie_recommendation_vectorizer)
 
             if user_intent == GAME_LABEL:
                 user_mini_game_point = movie_guessing_game(user_mini_game_point)
@@ -327,8 +330,10 @@ while not stop:
                     user_re_prompt = input("User: ")
 
                 if 'yes' in user_re_prompt.strip().lower():
+                    n_strike = 0
+
                     if user_intent == RECOMMENDATION_LABEL:
-                        movie_recommendation(user_query, genre_tfidf_vectorizer)
+                        movie_recommendation(user_query, movie_recommendation_vectorizer)
 
                     if user_intent == GAME_LABEL:
                         user_mini_game_point = movie_guessing_game(user_mini_game_point)
@@ -340,10 +345,7 @@ while not stop:
                         question_and_answer()
 
                 else:
-                    print("Chatbot: Sorry, I still don't understand TAT.")
-
-            elif n_strike == 2:
-                print("Chatbot: Can you please reformulate your query? I am capable of remembering my user, having some small conversation, answering questions, recommend movies based on genres as well as giving you a movie quiz.")
+                    print("Chatbot: Can you please reformulate your query? I am capable of remembering my user, having some small conversation, answering questions, recommend movies based on genres as well as giving you a movie quiz.")
 
             else:
                 n_strike = 0

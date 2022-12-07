@@ -48,7 +48,7 @@ def build_intent_matching_classifier():
                 data_inputs.append(text)
                 data_intents.append(label)
 
-    intent_tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'), ngram_range=(1, 3),
+    intent_tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'), ngram_range=(1, 2),
                                               analyzer=stemmed_words)
     x_train_tf = intent_tfidf_vectorizer.fit_transform(data_inputs)
 

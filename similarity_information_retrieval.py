@@ -19,7 +19,7 @@ def stemmed_words(doc):
     return (sb_stemmer.stem(w) for w in analyzer(doc))
 
 
-def build_genre_tfidf_vectorizer(genre_corpus):
+def build_movie_recommendation_vectorizer(genre_corpus):
     # Genres column text pre-processing
     genres_list = [gen.split('|') for gen in genre_corpus if '|' in gen]
     genres_list.extend(gen for gen in genre_corpus if '|' not in gen)
@@ -63,7 +63,7 @@ def calculate_it_similarity(query, document, intent, vectorizer):
     return similarity
 
 
-def build_tfidf_vectorizer_with_matrix(corpus):
+def build_vectorizer_and_matrix(corpus):
     # Build a vectorizer with text tokenization, convert lowercase, remove stop words, word stemming
     # and bi-grams
     tfidf_vectorizer = TfidfVectorizer(lowercase=True, stop_words=stopwords.words('english'),
@@ -77,19 +77,14 @@ def build_tfidf_vectorizer_with_matrix(corpus):
 def rank_similar_documents(input_data, tfidf_vectorizer, corpus_matrix):
     # Calculate the tfidf vector of the selected movie to be guessed
     document_tfidf_vector = tfidf_vectorizer.transform([input_data])
-
     # Find the cosine similarity of the summary corpus with the selected movie summary
     similarity = cosine_similarity(corpus_matrix, document_tfidf_vector)
     similarity = list(similarity)
-
     # Add an index column to the list
     for index, item in enumerate(similarity):
         similarity[index] = [index, item]
-
     # Sort the summary similarity in descending order
     similarity = sorted(similarity, key=lambda x: x[1], reverse=True)
-
-    # Keep track of the 2 most similar movies to the selected movie to be guessed
     top_similarity = similarity[0:3]
 
     return top_similarity
