@@ -73,8 +73,8 @@ def movie_recommendation(user_input, vectorizer):
 def movie_guessing_game(game_point):
     game_response = ''
     # Randomize a movie as the answer
-    # random_movie_index = random.randint(0, len(movie_df))
-    random_movie_index = 1662
+    random_movie_index = random.randint(0, len(movie_df))
+    # random_movie_index = 613
     # Get 2 similar summary movies based on the random_movie_index
     index = rank_similar_documents(movie_df.loc[random_movie_index]['Summary'], guessing_game_vectorizer,
                                    summary_matrix)

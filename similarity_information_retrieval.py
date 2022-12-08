@@ -85,8 +85,8 @@ def rank_similar_documents(input_data, tfidf_vectorizer, corpus_matrix):
         similarity[index] = [index, item]
     # Sort the summary similarity in descending order
     similarity = sorted(similarity, key=lambda x: x[1], reverse=True)
-    for index in range(5):
-        print("Index: " + str(similarity[index][0]) + ", Similarity score: " + str(similarity[index][1]))
+    # for index in range(5):
+    #     print("Index: " + str(similarity[index][0]) + ", Similarity score: " + str(similarity[index][1]))
     top_similarity = similarity[0:3]
 
     return top_similarity
