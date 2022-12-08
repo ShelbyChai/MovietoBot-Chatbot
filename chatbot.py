@@ -17,6 +17,7 @@ from similarity_information_retrieval import build_movie_recommendation_vectoriz
 
 # --------------------------------------------------------------------------
 # Load the data
+# References: Dataset extracted from https://data.world/iliketurtles/movie-dataset
 movie_df = pd.read_csv(r"data/information_retrieval/movie_dataset.csv")
 question_answer_df = pd.read_csv(r"data/information_retrieval/movie_question_answer.csv")
 
@@ -72,8 +73,8 @@ def movie_recommendation(user_input, vectorizer):
 def movie_guessing_game(game_point):
     game_response = ''
     # Randomize a movie as the answer
-    random_movie_index = random.randint(0, len(movie_df))
-    # random_movie_index = 984
+    # random_movie_index = random.randint(0, len(movie_df))
+    random_movie_index = 1662
     # Get 2 similar summary movies based on the random_movie_index
     index = rank_similar_documents(movie_df.loc[random_movie_index]['Summary'], guessing_game_vectorizer,
                                    summary_matrix)
@@ -292,7 +293,7 @@ while not stop:
     if user_query not in stop_list:
         # The confidence level of the chosen class
         intent_prediction_probability = class_probability_dict[user_intent]
-        print("Class probability -> " + str(intent_prediction_probability))
+        # print("Class probability -> " + str(intent_prediction_probability))
 
         # Only proceed with the intent if the classifier have confidence score on the class
         if intent_prediction_probability >= 0.8:
@@ -357,5 +358,3 @@ while not stop:
     else:
         print("Chatbot: Bye! See you soon.")
         stop = True
-
-# TODO: Save the model using pickle

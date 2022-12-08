@@ -14,7 +14,10 @@
         "I have some quiz for you",
         "Can I ask you something",
         "I need you to answer some question for me",
-        "I want to ask you something"
+        "I want to ask you something",
+        "I have one question",
+        "I have a movie question",
+        "Let's do question and answering!"
       ],
       "responses": [
         "Of course! What question do you have for me?",

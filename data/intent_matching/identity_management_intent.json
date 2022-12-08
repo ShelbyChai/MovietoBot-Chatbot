@@ -52,10 +52,7 @@
       ],
       "responses": [
         "Great! Hi <HUMAN>! How can I help?",
-        "Good! Hi <HUMAN>, how can I help you?",
-        "Cool! Hello <HUMAN>, what can I do for you?",
-        "OK! Hola <HUMAN>, how can I help you?",
-        "OK! hi <HUMAN>, what can I do for you?"
+        "OK! Hola <HUMAN>, how can I help you?"
       ]
     },
     {
@@ -74,8 +71,6 @@
       ],
       "responses": [
         "You are <HUMAN>! How can I help?",
-        "Your name is <HUMAN>, how can I help you?",
-        "They call you <HUMAN>, what can I do for you?",
         "Your name is <HUMAN>, how can I help you?"
       ]
     }
