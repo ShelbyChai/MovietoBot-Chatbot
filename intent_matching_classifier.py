@@ -103,5 +103,5 @@ def build_intent_matching_classifier():
 
 
 # Evaluation of intent classifier
-[intent_label, intent_classifier, intent_tfidf_vectorizer] = build_intent_matching_classifier()
+# [intent_label, intent_classifier, intent_tfidf_vectorizer] = build_intent_matching_classifier()
 

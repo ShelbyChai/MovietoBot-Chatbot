@@ -20,8 +20,6 @@ def get_user_name(user_input, vocabulary):
                  if not token.lower() in common_word and not token.lower() in stopwords.words(
             'english') and token.isalpha()]
 
-    post = pos_tag(user_name, tagset="universal")
-    # Only conserve text which its p-o-s tag is 'NOUN'
-    user_name = ' '.join([tup[0] for tup in post if tup[1] == 'NOUN'])
+    user_name = " ".join(user_name)
 
     return user_name.title()
