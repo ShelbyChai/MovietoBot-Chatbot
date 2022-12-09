@@ -137,12 +137,12 @@ def small_talk_and_identity_management(name, user_intent, stop):
                 else:
                     name_query = input("User: ")
 
-                name = get_user_name(name_query, identity_management_vectorizer.get_feature_names_out())
+                name = get_user_name(name_query)
                 print('Chatbot: Great! Hi ' + name + ", nice to meet you! What can I do for you today?")
 
             # Change the username
             if tag == "ChangeUserName":
-                name = get_user_name(user_query, identity_management_vectorizer.get_feature_names_out())
+                name = get_user_name(user_query)
                 bot_response = bot_response.replace("<HUMAN>", name)
                 print("Chatbot: " + bot_response)
 

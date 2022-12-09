@@ -3,15 +3,8 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 
-def get_user_name(user_input, vocabulary):
-    vocabulary = vocabulary.tolist()
+def get_user_name(user_input):
     common_word = ["name", "people", "please", "call", "me", "my", "change"]
-    # Extend the common word with the query vocabulary
-    common_word.extend(vocabulary)
-    common_word.remove("adam")
-    common_word.remove("bella")
-
-    # print(common_word)
 
     tokens = word_tokenize(user_input)
 
